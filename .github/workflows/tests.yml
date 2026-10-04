@@ -39,6 +39,7 @@ jobs:
           uv build ./examples/text-plugin --out-dir dist
           uv build ./packages/hidden-moves-mcp --out-dir dist
           uv build ./packages/hidden-moves-openai --out-dir dist
+          uv build ./packages/hidden-moves-github-projects --out-dir dist
       - name: Inspect and install actual wheels
         run: |
           python scripts/check_distributions.py dist
@@ -50,6 +51,8 @@ jobs:
         run: python -m unittest discover -s examples/text-plugin/tests -v
       - name: Check function-tool export and dispatch
         run: python -m unittest discover -s packages/hidden-moves-openai/tests -v
+      - name: Check standalone Projects client
+        run: python -m unittest discover -s packages/hidden-moves-github-projects/tests -v
       - name: Exercise MCP clients and local transport
         run: python -m unittest discover -s packages/hidden-moves-mcp/tests -v
       - name: Check interoperability demonstration

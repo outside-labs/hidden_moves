@@ -1,0 +1,22 @@
+{
+  "ListProjects": {"data": {"owner": {"projectsV2": {"nodes": [{"id": "PVT_demo", "number": 2, "title": "Synthetic board", "url": "https://github.com/orgs/example/projects/2", "shortDescription": "Fixture only", "public": false, "closed": false, "owner": {"__typename": "Organization", "login": "example"}}], "pageInfo": {"hasNextPage": false, "endCursor": "project-end"}}}}},
+  "GetProject": {"data": {"owner": {"projectV2": {"id": "PVT_demo", "number": 2, "title": "Synthetic board", "url": "https://github.com/orgs/example/projects/2", "shortDescription": "Fixture only", "public": false, "closed": false, "owner": {"__typename": "Organization", "login": "example"}}}}},
+  "ProjectFields": {"data": {"node": {"__typename": "ProjectV2", "fields": {"nodes": [
+    {"__typename": "ProjectV2Field", "id": "FIELD_title", "name": "Title", "dataType": "TITLE"},
+    {"__typename": "ProjectV2SingleSelectField", "id": "FIELD_status", "name": "Status", "dataType": "SINGLE_SELECT", "options": [{"id": "OPT_ready", "name": "Ready"}]},
+    {"__typename": "ProjectV2IterationField", "id": "FIELD_iteration", "name": "Iteration", "dataType": "ITERATION", "configuration": {"iterations": [{"id": "ITER_current", "title": "Current", "startDate": "2026-10-01", "duration": 14}], "completedIterations": [{"id": "ITER_old", "title": "Previous", "startDate": "2026-09-17", "duration": 14}]}}
+  ], "pageInfo": {"hasNextPage": false, "endCursor": "field-end"}}}}},
+  "ProjectItems": {"data": {"node": {"__typename": "ProjectV2", "items": {"nodes": [
+    {"id": "ITEM_issue", "type": "ISSUE", "isArchived": false, "createdAt": "2026-10-01T00:00:00Z", "updatedAt": "2026-10-02T00:00:00Z", "content": {"__typename": "Issue", "id": "ISSUE_node", "number": 17, "title": "Synthetic issue", "url": "https://github.com/example/repo/issues/17", "state": "OPEN", "repository": {"nameWithOwner": "example/repo"}}, "fieldValues": {"nodes": [
+      {"__typename": "ProjectV2ItemFieldSingleSelectValue", "id": "VALUE_status", "field": {"id": "FIELD_status", "name": "Status"}, "optionId": "OPT_ready", "name": "Ready"},
+      {"__typename": "ProjectV2ItemFieldTextValue", "id": "VALUE_text", "field": {"id": "FIELD_text", "name": "Notes"}, "text": "Synthetic text"},
+      {"__typename": "ProjectV2ItemFieldNumberValue", "id": "VALUE_number", "field": {"id": "FIELD_number", "name": "Estimate"}, "number": 3.5},
+      {"__typename": "ProjectV2ItemFieldDateValue", "id": "VALUE_date", "field": {"id": "FIELD_date", "name": "Date"}, "date": "2026-10-04"},
+      {"__typename": "ProjectV2ItemFieldIterationValue", "id": "VALUE_iteration", "field": {"id": "FIELD_iteration", "name": "Iteration"}, "iterationId": "ITER_current", "title": "Current", "startDate": "2026-10-01", "duration": 14}
+    ], "pageInfo": {"hasNextPage": false, "endCursor": "value-end"}}},
+    {"id": "ITEM_pr", "type": "PULL_REQUEST", "isArchived": true, "createdAt": "2026-10-01T00:00:00Z", "updatedAt": "2026-10-02T00:00:00Z", "content": {"__typename": "PullRequest", "id": "PR_node", "number": 18, "title": "Synthetic PR", "url": "https://github.com/example/repo/pull/18", "state": "MERGED", "repository": {"nameWithOwner": "example/repo"}}, "fieldValues": {"nodes": [], "pageInfo": {"hasNextPage": false, "endCursor": null}}},
+    {"id": "ITEM_draft", "type": "DRAFT_ISSUE", "isArchived": false, "createdAt": "2026-10-01T00:00:00Z", "updatedAt": "2026-10-02T00:00:00Z", "content": {"__typename": "DraftIssue", "id": "DRAFT_node", "title": "Synthetic draft", "body": "Fixture content"}, "fieldValues": {"nodes": [], "pageInfo": {"hasNextPage": false, "endCursor": null}}},
+    {"id": "ITEM_redacted", "type": "REDACTED", "isArchived": false, "createdAt": "2026-10-01T00:00:00Z", "updatedAt": "2026-10-02T00:00:00Z", "content": null, "fieldValues": {"nodes": [], "pageInfo": {"hasNextPage": false, "endCursor": null}}}
+  ], "pageInfo": {"hasNextPage": false, "endCursor": "item-end"}}}}},
+  "ItemFieldValues": {"data": {"node": {"__typename": "ProjectV2Item", "fieldValues": {"nodes": [], "pageInfo": {"hasNextPage": false, "endCursor": null}}}}}
+}

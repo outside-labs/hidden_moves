@@ -14,6 +14,7 @@ PUBLIC = {
 	"hidden-moves": "hidden_moves",
 	"hidden-moves-mcp": "hidden_moves_mcp",
 	"hidden-moves-openai": "hidden_moves_openai",
+	"hidden-moves-github-projects": "hidden_moves_github_projects",
 }
 EXAMPLE = "hidden-moves-example-text"
 
@@ -51,12 +52,14 @@ def check_wheels(directory: Path) -> None:
 			if f"{PUBLIC[name]}/__init__.py" not in names:
 				raise ValueError(f"Missing import package for {name}.")
 			requirements = metadata.get_all("Requires-Dist", [])
-			if name != "hidden-moves" and not any(
+			if name in {"hidden-moves-mcp", "hidden-moves-openai"} and not any(
 				requirement.replace(" ", "").startswith("hidden-moves")
 				and ">=0.1" in requirement and "<0.2" in requirement
 				for requirement in requirements
 			):
 				raise ValueError(f"Missing tested core minor range for {name}.")
+			if name == "hidden-moves-github-projects" and any(";" not in requirement for requirement in requirements):
+				raise ValueError("The ordinary Projects client must have no mandatory dependencies.")
 			if name == "hidden-moves":
 				allowed = {"core", "adapters", "commands", "__init__.py", "__main__.py", "cli.py"}
 				for item in names:
