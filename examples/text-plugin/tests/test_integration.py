@@ -27,7 +27,9 @@ def independent(name, *args, **kwargs):
         raise AssertionError("ordinary helper imported the registry")
     return original(name, *args, **kwargs)
 builtins.__import__ = independent
+from hidden_moves_example_text import prefix_text, repeat_text
 assert repeat_text("hello", 2, separator="/") == "hello/hello"
+assert prefix_text("demo: ", "hello") == "demo: hello"
 assert "hidden_moves" not in sys.modules
 '''
 		result = subprocess.run([sys.executable, "-I", "-B", "-c", script], capture_output=True, text=True, check=False)
