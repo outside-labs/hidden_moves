@@ -59,3 +59,18 @@ jobs:
         run: python -m unittest discover -s examples/tests -v
       - name: Demonstrate Projects fixture interoperability
         run: python examples/projects_fixture_demo.py
+
+      - name: Checkout tested Backpack storage
+        uses: actions/checkout@v4
+        with:
+          repository: outside-labs/backpack
+          ref: 50bb74578a3686751bafcac9d6c9bdf12acdabe9
+          path: .dependencies/backpack
+      - name: Build and install the optional Backpack wheel
+        run: |
+          uv build .dependencies/backpack --out-dir backpack-dist
+          python -c "import pathlib, subprocess, sys; wheels = list(pathlib.Path('backpack-dist').glob('*.whl')); assert len(wheels) == 1; subprocess.run([sys.executable, '-m', 'pip', 'install', str(wheels[0])], check=True)"
+      - name: Verify typed Projects snapshots
+        run: |
+          python -m unittest discover -s packages/hidden-moves-github-projects/snapshot_tests -v
+          python examples/projects_snapshot_demo.py
