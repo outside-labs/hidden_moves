@@ -93,6 +93,11 @@ exports Responses function tools and supports offline dispatch. Both use the sam
 structured contract. Applications own authorization, transport, concurrency, and
 resource cleanup.
 
+The [GitHub Projects consumer](docs/GITHUB_PROJECTS.md) provides a standalone typed
+read-only client and optional configured provider/host. Its fixture proof returns
+equivalent data through Python, catalog, actual stdio MCP, and function tools; a
+separate bounded live read verifies existing GitHub authorization.
+
 The [installed text provider](examples/text-plugin/README.md) demonstrates ordinary
 imports, explicit activation, and target binding. The [interoperability example](examples/interop_demo.py)
 proves equivalent behavior through Python, CLI, MCP, and function tools.
