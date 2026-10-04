@@ -6,7 +6,10 @@ import inspect
 import json
 import re
 from collections.abc import Mapping
+from contextlib import nullcontext
+from math import isfinite
 
+import anyio
 from mcp import MCPError
 from mcp.server import Server, ServerRequestContext
 from mcp.server.stdio import stdio_server
@@ -21,7 +24,11 @@ from mcp.types import (
 	ToolAnnotations,
 )
 
-from hidden_moves.adapters import CapabilityArgumentError, CapabilityCatalog, CapabilityResultError
+from hidden_moves.adapters import (
+	CapabilityArgumentError,
+	CapabilityCatalog,
+	CapabilityResultError,
+)
 
 _TOOL_NAME = re.compile(r"[A-Za-z0-9_.-]{1,128}\Z")
 _HINT_NAMES = {
@@ -40,7 +47,18 @@ class MCPAdapter:
 		catalog: CapabilityCatalog,
 		*,
 		tool_names: Mapping[str, str] | None = None,
+		offload_sync: bool = False,
+		call_timeout: float | None = None,
 	) -> None:
+		if not isinstance(offload_sync, bool):
+			raise ValueError("offload_sync must be a boolean.")
+		if call_timeout is not None and (
+			isinstance(call_timeout, bool) or not isinstance(call_timeout, (int, float))
+			or not isfinite(call_timeout) or not 0 < call_timeout <= 120
+		):
+			raise ValueError("call_timeout must be finite and between 0 and 120 seconds.")
+		self._offload_sync = offload_sync
+		self._call_timeout = call_timeout
 		self.catalog = catalog
 		aliases = dict(tool_names or {})
 		selected = {definition.name for definition in catalog.definitions()}
@@ -97,10 +115,18 @@ class MCPAdapter:
 		except KeyError as error:
 			raise MCPError(code=INVALID_PARAMS, message="Unknown or unexposed tool.") from error
 		try:
-			result = self.catalog.invoke(qualified_name, params.arguments if params.arguments is not None else {})
-			if inspect.isawaitable(result):
-				result = await result
-			value = self.catalog.serialize_result(qualified_name, result)
+			budget = anyio.fail_after(self._call_timeout) if self._call_timeout is not None else nullcontext()
+			with budget:
+				arguments = params.arguments if params.arguments is not None else {}
+				if self._offload_sync and not self.catalog.describe(qualified_name).is_async:
+					result = await anyio.to_thread.run_sync(
+						lambda: self.catalog.invoke(qualified_name, arguments), abandon_on_cancel=True,
+					)
+				else:
+					result = self.catalog.invoke(qualified_name, arguments)
+				if inspect.isawaitable(result):
+					result = await result
+				value = self.catalog.serialize_result(qualified_name, result)
 		except (CapabilityArgumentError, CapabilityResultError) as error:
 			return CallToolResult(is_error=True, content=[TextContent(type="text", text=str(error))])
 		except Exception as error:
