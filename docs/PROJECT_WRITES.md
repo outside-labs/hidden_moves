@@ -77,7 +77,7 @@ effects. Application permissions and caller approval policy enforce access;
 annotations do not grant it. There are no deletion, archive, draft, bulk,
 iteration-edit or field-definition tools.
 
-## Verification and remaining live gate
+## Verification
 
 Synthetic installed-wheel tests cover authorization, Issue/PR types, dynamic
 choices, stale values, membership, pagination budgets, partial completion,
@@ -86,9 +86,22 @@ function consumers. Real stdio checks exercise both writes against synthetic
 transport. The actual content, membership and field-value preflight queries and
 mutation input/payload schema were checked through bounded read-only GitHub calls.
 
-The live mutation proof remains pending an explicitly authorized disposable
-Project fixture. The implementation plan requires that separate designation.
-`examples/projects_write_fixture.py` is ready to add one existing Issue/PR,
-dynamically select a different option on a supplied single-select field and verify
-both effects. CI never mutates a GitHub account. No live mutation through the new
-writer has been performed yet.
+An explicitly authorized live proof completed on 2026-10-04 at
+22:58:43 UTC against the private
+[Projects write verification fixture](https://github.com/orgs/outside-labs/projects/4).
+The installed wheel added the existing closed
+[Backpack setup issue](https://github.com/outside-labs/backpack/issues/1) and
+verified its Project membership and content identity. A separate write dynamically
+resolved the `Status` field and changed its observed `Done` choice to `Todo`;
+the post-write read verified the new option. Both receipts reported
+`acknowledged=True` and `verified=True`.
+
+The first field attempt encountered a concurrent status change and raised
+`SelectionConflictError` before submission. After inspecting the current value,
+only the field change was submitted again; the successful add was not repeated.
+The private fixture remains available for review.
+
+`examples/projects_write_fixture.py` demonstrates these two independent operations
+on a supplied authorized fixture. A conflict or uncertain outcome requires
+inspection before deciding what to submit next. CI uses synthetic transport and
+never mutates a GitHub account.
