@@ -136,9 +136,6 @@ class CliTests(unittest.TestCase):
 		self.assertEqual(result.exit_code, 1)
 		self.assertIn("example failure", result.output)
 
-
-
-
 	def test_plugin_listing_reads_metadata_without_loading(self):
 		entry = EntryPoint("example", "example:provide", ENTRY_POINT_GROUP)
 		with (
