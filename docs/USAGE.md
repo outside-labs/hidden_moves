@@ -106,8 +106,9 @@ Use the environment created above:
 The `hm` executable aliases `hidden-moves`. Installing a provider does not activate
 it; `--plugin` chooses it for that invocation. Generic calls select one capability,
 validate the JSON object, await results when necessary, and print JSON. Invalid
-structured input is rejected before the function runs. Existing specialized text,
-JSON, system-command, and notes interfaces remain available.
+structured input is rejected before the function runs. Both CLIs begin with an
+empty registry; domain operations require explicit provider activation. Target-bound
+operations require an application host that configures the target before selection.
 
 ## MCP consumer
 

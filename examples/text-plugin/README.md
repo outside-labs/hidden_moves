@@ -30,3 +30,22 @@ returns one `MoveSpec` for `example.text.repeat`, with typed schemas, provenance
 behavioral hints, and example metadata. Loading a conflicting definition fails
 without changing existing registrations. This example is a local integration
 proof and has not been published as a package.
+
+## Target binding
+
+The ordinary `prefix_text(prefix, value)` helper also has an explicit target-bound
+provider definition, `example.text.prefix`. A host binds a configured string:
+
+```python
+from hidden_moves import Moves, discover_providers, load_provider
+from hidden_moves.adapters import CapabilityCatalog
+
+moves = Moves("demo: ")
+entry, = [entry for entry in discover_providers() if entry.name == "example-text"]
+load_provider(entry, moves.registry)
+catalog = CapabilityCatalog(moves, ["example.text.prefix"])
+assert catalog.invoke("example.text.prefix", {"value": "hello"}) == "demo: hello"
+```
+
+Generic CLI inspection can describe the unbound operation. The executable does
+not infer a target; a configured application host owns binding and exposure.

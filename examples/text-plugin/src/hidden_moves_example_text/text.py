@@ -6,3 +6,8 @@ def repeat_text(value: str, count: int = 2, *, separator: str = " ") -> str:
 	if count < 0:
 		raise ValueError("count must be nonnegative.")
 	return separator.join([value] * count)
+
+
+def prefix_text(prefix: str, value: str) -> str:
+	"""Prepend a configured prefix to text without changing either value."""
+	return prefix + value

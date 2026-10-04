@@ -10,7 +10,7 @@ from click.testing import CliRunner
 from hidden_moves import Moves, ProviderLoadError, discover_providers, load_provider
 from hidden_moves.adapters import CapabilityCatalog
 from hidden_moves.cli import main
-from hidden_moves_example_text import repeat_text
+from hidden_moves_example_text import prefix_text, repeat_text
 
 
 class ExampleProviderTests(unittest.TestCase):
@@ -27,7 +27,7 @@ def independent(name, *args, **kwargs):
         raise AssertionError("ordinary helper imported the registry")
     return original(name, *args, **kwargs)
 builtins.__import__ = independent
-from hidden_moves_example_text import repeat_text
+from hidden_moves_example_text import prefix_text, repeat_text
 assert repeat_text("hello", 2, separator="/") == "hello/hello"
 assert "hidden_moves" not in sys.modules
 '''
@@ -55,7 +55,7 @@ assert "hidden_moves_example_text.integration" not in sys.modules
 		self.assertEqual(catalog.describe("example.text.repeat").source, self.entry().value)
 		with self.assertRaises(ProviderLoadError):
 			load_provider(self.entry(), moves.registry)
-		self.assertEqual(len(moves.moves()), 1)
+		self.assertEqual(len(moves.moves()), 2)
 		self.assertEqual(moves.example.text.repeat("hello"), "hello hello")
 
 	def test_real_provider_cli_activation_is_scoped_to_one_invocation(self):
@@ -65,3 +65,15 @@ assert "hidden_moves_example_text.integration" not in sys.modules
 		self.assertEqual(json.loads(result.output), "hello hello hello")
 		unloaded = runner.invoke(main, ["moves", "show", "example.text.repeat"])
 		self.assertNotEqual(unloaded.exit_code, 0)
+
+	def test_installed_provider_binds_independent_targets_without_exposing_them(self):
+		unbound = Moves()
+		load_provider(self.entry(), unbound.registry)
+		definition = unbound.describe("example.text.prefix")
+		self.assertFalse(definition.available)
+		self.assertEqual(definition.input_schema["required"], ("value",))
+		for prefix in ("first: ", "second: "):
+			moves = Moves(prefix, registry=unbound.registry)
+			catalog = CapabilityCatalog(moves, ["example.text.prefix"])
+			self.assertEqual(catalog.invoke("example.text.prefix", {"value": "hello"}), prefix_text(prefix, "hello"))
+			self.assertNotIn(prefix, json.dumps(catalog.describe("example.text.prefix").to_dict()))

@@ -1,4 +1,4 @@
-"""Thin Click adapters for capability inspection and example moves."""
+"""Thin Click adapters for explicit capability inspection and invocation."""
 
 import asyncio
 import inspect
@@ -74,33 +74,3 @@ def plugin_commands() -> None:
 def list_plugins() -> None:
 	for entry in discover_providers():
 		click.echo(f"{entry.name}\t{entry.value}")
-
-
-@click.group(name="text")
-def text_commands() -> None:
-	"""Reusable text operations."""
-
-
-@text_commands.command(name="slugify")
-@click.argument("value")
-@click.pass_obj
-def slugify(moves: Moves, value: str) -> None:
-	click.echo(moves.text.slugify(value))
-
-
-@click.group(name="json")
-def json_commands() -> None:
-	"""JSON serialization through a target-bound move."""
-
-
-@json_commands.command(name="dumps")
-@click.argument("value")
-@click.option("--indent", type=click.IntRange(min=0), default=None)
-@click.pass_obj
-def dump_json(moves: Moves, value: str, indent: int | None) -> None:
-	try:
-		target = json.loads(value)
-	except json.JSONDecodeError as error:
-		raise click.BadParameter(str(error), param_hint="value") from error
-	bound = Moves(target, registry=moves.registry, context=moves.context)
-	click.echo(bound.io.json.dumps(indent=indent))

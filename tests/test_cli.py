@@ -1,9 +1,8 @@
 """CLI parsing and errors at the thin adapter boundary."""
 
 import json
-import subprocess
-import sys
 import unittest
+from contextlib import contextmanager
 from importlib.metadata import EntryPoint
 from unittest.mock import patch
 
@@ -23,18 +22,28 @@ class CliTests(unittest.TestCase):
 				result = self.runner.invoke(main, arguments)
 				self.assertEqual(result.exit_code, 0, result.output)
 			discover.assert_not_called()
-		self.assertIn("io.json.dumps", result.output)
+		self.assertEqual(result.output, "")
+		self.assertEqual(set(main.commands), {"plugins", "moves"})
+		listing = self.runner.invoke(main, ["moves", "list", "--json"])
+		self.assertEqual(json.loads(listing.output), [])
 
-	def test_json_and_text_commands_invoke_the_registered_capabilities(self):
-		result = self.runner.invoke(main, ["text", "slugify", "Héllo, World!"])
-		self.assertEqual(result.exit_code, 0, result.output)
-		self.assertEqual(result.output.strip(), "hello-world")
-		result = self.runner.invoke(main, ["json", "dumps", '{"value": 1}', "--indent", "2"])
-		self.assertEqual(result.exit_code, 0, result.output)
-		self.assertEqual(json.loads(result.output), {"value": 1})
+	def test_domain_commands_are_not_shipped(self):
+		for name in ("text", "json", "cmd", "notes"):
+			with self.subTest(name=name):
+				result = self.runner.invoke(main, [name])
+				self.assertEqual(result.exit_code, 2)
+
+	@contextmanager
+	def provider(self, *specs):
+		entry = EntryPoint("example", "example:provide", ENTRY_POINT_GROUP)
+		with (
+			patch("hidden_moves.cli.discover_providers", return_value=(entry,)),
+			patch.object(EntryPoint, "load", return_value=lambda: specs),
+		):
+			yield
 
 	def test_invalid_json_and_unknown_moves_have_useful_errors(self):
-		result = self.runner.invoke(main, ["json", "dumps", "{broken"])
+		result = self.runner.invoke(main, ["moves", "call", "unknown", "--arguments", "{broken"])
 		self.assertEqual(result.exit_code, 2)
 		self.assertIn("Invalid value", result.output)
 		result = self.runner.invoke(main, ["moves", "show", "unknown"])
@@ -42,7 +51,11 @@ class CliTests(unittest.TestCase):
 		self.assertIn("Unknown move", result.output)
 
 	def test_show_reports_a_target_requirement_without_invocation(self):
-		result = self.runner.invoke(main, ["moves", "show", "io.json.dumps"])
+		def operation(target: str, value: str) -> str:
+			return target + value
+
+		with self.provider(MoveSpec("operation", operation, bind_target=True)):
+			result = self.runner.invoke(main, ["--plugin", "example", "moves", "show", "operation"])
 		self.assertEqual(result.exit_code, 0, result.output)
 		details = json.loads(result.output)
 		self.assertFalse(details["available"])
@@ -65,9 +78,13 @@ class CliTests(unittest.TestCase):
 		self.assertEqual(definition["input_schema"]["required"], ["value"])
 
 	def test_generic_call_uses_the_catalog_and_returns_json(self):
-		result = self.runner.invoke(main, ["moves", "call", "text.slugify", "--arguments", '{"value": "Hello World"}'])
+		def operation(value: str) -> str:
+			return value.upper()
+
+		with self.provider(MoveSpec("operation", operation)):
+			result = self.runner.invoke(main, ["--plugin", "example", "moves", "call", "operation", "--arguments", '{"value": "Hello World"}'])
 		self.assertEqual(result.exit_code, 0, result.output)
-		self.assertEqual(json.loads(result.output), "hello-world")
+		self.assertEqual(json.loads(result.output), "HELLO WORLD")
 
 	def test_bad_json_and_invalid_arguments_fail_before_execution(self):
 		def operation(value: str) -> str:
@@ -85,7 +102,11 @@ class CliTests(unittest.TestCase):
 					self.assertNotIn("invalid arguments executed", result.output)
 
 	def test_generic_call_reports_missing_binding(self):
-		result = self.runner.invoke(main, ["moves", "call", "io.json.dumps"])
+		def operation(target: str) -> str:
+			return target
+
+		with self.provider(MoveSpec("operation", operation, bind_target=True)):
+			result = self.runner.invoke(main, ["--plugin", "example", "moves", "call", "operation"])
 		self.assertEqual(result.exit_code, 1)
 		self.assertIn("requires Moves", result.output)
 
@@ -115,23 +136,8 @@ class CliTests(unittest.TestCase):
 		self.assertEqual(result.exit_code, 1)
 		self.assertIn("example failure", result.output)
 
-	def test_system_flags_are_forwarded_and_helpers_are_not_commands(self):
-		with patch("hidden_moves.kit.cmd.commands.subprocess.run") as run:
-			run.return_value = subprocess.CompletedProcess(["ls"], 0)
-			result = self.runner.invoke(main, ["cmd", "run", "ls", "-lahC", "."])
-			self.assertEqual(result.exit_code, 0, result.output)
-			self.assertEqual(run.call_args.args[0], ["ls", "-lahC", "."])
-		self.assertEqual(set(main.commands["cmd"].commands), {"run"})
 
-	def test_system_nonzero_exit_code_reaches_the_cli(self):
-		result = self.runner.invoke(main, ["cmd", "run", sys.executable, "-c", "raise SystemExit(7)"])
-		self.assertEqual(result.exit_code, 7)
 
-	def test_missing_system_program_has_a_cli_error(self):
-		with patch("hidden_moves.kit.cmd.commands.subprocess.run", side_effect=FileNotFoundError("missing")):
-			result = self.runner.invoke(main, ["cmd", "run", "missing-program"])
-		self.assertEqual(result.exit_code, 1)
-		self.assertIn("missing", result.output)
 
 	def test_plugin_listing_reads_metadata_without_loading(self):
 		entry = EntryPoint("example", "example:provide", ENTRY_POINT_GROUP)

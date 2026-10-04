@@ -1,160 +1,118 @@
 # Hidden Moves
 
-Hidden Moves collects reusable Python capabilities and exposes them through a small
-registry, per-object binding, and an optional CLI. Functions and clients remain
-useful through ordinary imports; they do not need to inherit from Hidden Moves classes.
+Describe, discover, bind, and expose typed Python capabilities. Ordinary functions
+and clients own their behavior; Hidden Moves supplies a small registry, schemas,
+per-object binding, and explicitly selected consumer interfaces.
 
-The API is experimental. See [the implemented plugin contract](docs/PLUGIN_API.md)
-for registration, binding, discovery, and extraction boundaries.
-The [usage and readiness guide](docs/USAGE.md) walks one ordinary function through
-Python, inspection, CLI, MCP, and function-tool dispatch.
+The API and provider contract are experimental. See the [plugin contract](docs/PLUGIN_API.md),
+[catalog guide](docs/CAPABILITY_CATALOG.md), and [usage guide](docs/USAGE.md).
 
-## Setup and commands
+## Installation and CLI
 
 Python 3.11 or newer is required. Click is the core distribution's only runtime
-dependency; registry and schema modules use the standard library.
+dependency. Registry, schema, and catalog modules use the standard library.
 
 ```sh
 uv sync
 uv run hidden-moves --help
-uv run hidden-moves moves list
-uv run hidden-moves moves list --json
-uv run hidden-moves moves show io.json.dumps
-uv run hidden-moves moves call text.slugify --arguments '{"value": "Hello World"}'
-uv run hidden-moves text slugify 'Héllo, World!'
-uv run hidden-moves json dumps '{"value": 1}' --indent 2
-uv run hidden-moves cmd run ls -lahC .
 uv run hidden-moves plugins list
-uv run hm moves list
+uv run hidden-moves moves list --json
 ```
 
-The `hm` command is a short alias for `hidden-moves`. For the current checkout without
-installing the package, use `PYTHONPATH=src .venv/bin/python -m hidden_moves`.
-
-## 1. Ordinary functions
-
-Registration defaults to preserving the original arguments. Built-in definitions
-are assembled explicitly; creating `Moves()` gives you an empty registry.
-
-```python
-from hidden_moves import Moves
-from hidden_moves.kit.text import slugify
-
-moves = Moves()
-moves.learn(
-	slugify,
-	namespace="text",
-)
-
-assert moves.text.slugify("Héllo, World!") == slugify("Héllo, World!")
-```
-
-## 2. Target-bound serialization
-
-`bind_target=True` supplies the current target as the callable's first positional
-argument. The target and its class are not modified. Multiple containers can share
-the same definitions while binding different targets.
-
-```python
-from hidden_moves import Moves
-from hidden_moves.builtins import builtin_registry
-
-registry = builtin_registry()
-first = Moves(
-	target={
-		"value": 1,
-	},
-	registry=registry,
-)
-second = Moves(
-	target={
-		"value": 2,
-	},
-	registry=registry,
-)
-
-print(first.io.json.dumps(indent=2))
-print(second.io.json.dumps(indent=2))
-```
-
-## 3. Configured clients
-
-Configuration is explicit. A client factory can read a container's context, and
-its existing bound method can be learned without injecting another target.
-Constructing this client and registering its method perform no network I/O;
-calling `get()` makes the request. Replace the example URL with your service.
-
-```python
-from hidden_moves import Moves
-from hidden_moves.connectors.json_api import JsonApiClient
-
-moves = Moves(
-	context={
-		"api": {
-			"base_url": "https://api.example.test/v1/",
-			"timeout": 5.0,
-		},
-	},
-)
-client = JsonApiClient(
-	**moves.context["api"],
-)
-moves.learn(
-	client.get,
-	namespace="api",
-)
-
-result = moves.api.get("items")
-```
-
-The small JSON client supports GET requests, headers, query parameters, a finite
-timeout, and an injected opener. HTTP, transport, and JSON decoding errors propagate
-to the application. Authentication, retries, and pagination remain client concerns.
-
-The existing Obsidian exporter is also available directly as
-`hidden_moves.notes.obsidian.export_index(vault, destination=None)` and as the
-explicit built-in move `notes.obsidian.export_index`.
-
-## Inspection and async
-
-- `moves.moves()` returns definitions sorted by qualified name.
-- `moves.knows("io.json.dumps")` reports registration, including unbound moves.
-- `moves.resolve("io.json.dumps")` returns the callable for this target.
-- `moves.describe("io.json.dumps")` returns a structured `MoveDefinition`.
-- `moves.explain("io.json.dumps")` reports source, signature, binding, and async metadata.
-- `dir(moves)` and `dir(moves.io)` include registered namespace members.
-
-Async callables retain their awaitable results. Use `await moves.operation(...)`;
-Hidden Moves does not run an event loop on your behalf. Dynamic namespace access
-does not promise static autocomplete; the underlying typed APIs remain available.
-
-Registration can include `MoveAnnotations(read_only=True, destructive=False)` and
-JSON-compatible `metadata`. Behavioral hints default to unknown and leave invocation
-policy to consumers. Metadata is copied deeply and stored immutably. Descriptions
-retain full documentation; inspection never displays target or context values.
-Typed signatures also produce neutral input and output JSON Schemas. Unsupported
-signatures report `schema_errors` while remaining usable through ordinary Python.
-See the plugin contract for the supported type subset and explicit schema overrides.
-The [selected capability catalog](docs/CAPABILITY_CATALOG.md) provides shared
-structured validation and dispatch for consumer interfaces.
-The optional [MCP adapter](packages/hidden-moves-mcp/README.md) exposes explicitly
-selected catalogs through a local stdio host. Its SDK dependency is separate from
-the core package.
-The separate [function-tool adapter](packages/hidden-moves-openai/README.md)
-exports the same catalog for Responses applications and supports offline dispatch.
-
-## Tests and lint
-
-Focused behavior tests live in `tests/` and use standard-library `unittest`.
-The client tests inject a transport and make no real network requests.
-Pull requests also build and install the package, run the behavior suite on
-Python 3.11 and 3.13, and check both installed commands and module execution.
+The registry starts empty. Installing a provider advertises it; loading it is an
+explicit choice. Install the source-only text example to try the generic CLI:
 
 ```sh
-PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
-uvx ruff check src/hidden_moves/core src/hidden_moves/commands \
-  src/hidden_moves/connectors/json_api.py src/hidden_moves/kit/cmd \
-  src/hidden_moves/kit/text.py src/hidden_moves/notes/obsidian.py \
-  src/hidden_moves/builtins.py src/hidden_moves/cli.py \
-  src/hidden_moves/__init__.py src/hidden_moves/__main__.py tests
+uv pip install --python .venv/bin/python ./examples/text-plugin
+uv run hidden-moves --plugin example-text moves show example.text.repeat
+uv run hm --plugin example-text moves call example.text.repeat \
+  --arguments '{"value": "hello", "count": 3}'
 ```
+
+`hm` aliases `hidden-moves`. The shipped command groups are `plugins list` and
+`moves list/show/call`. An unconfigured CLI can inspect target-bound definitions;
+an application host must bind their target before structured invocation.
+
+## Ordinary functions
+
+Your functions remain directly usable without registration:
+
+```python
+from hidden_moves import Moves
+from hidden_moves.adapters import CapabilityCatalog
+
+def repeat(value: str, count: int = 2) -> str:
+    return " ".join([value] * count)
+
+moves = Moves()
+moves.learn(repeat, namespace="text")
+assert moves.text.repeat("hello", 3) == repeat("hello", 3)
+
+catalog = CapabilityCatalog(moves, ["text.repeat"])
+assert catalog.invoke("text.repeat", {"value": "hello"}) == "hello hello"
+```
+
+The catalog validates structured arguments before execution and serializes
+supported finite JSON results. Non-recursive dataclasses and TypedDicts retain
+typed Python behavior through supported model conversion.
+
+## Per-object binding
+
+`bind_target=True` supplies the container's target as the first positional argument.
+Definitions can be shared while each container retains its own target:
+
+```python
+from hidden_moves import Moves, Registry, MoveSpec
+
+def prefix(target: str, value: str) -> str:
+    return target + value
+
+registry = Registry()
+registry.register(MoveSpec("prefix", prefix, namespace="text", bind_target=True))
+first = Moves("first: ", registry=registry)
+second = Moves("second: ", registry=registry)
+assert first.text.prefix("hello") == "first: hello"
+assert second.text.prefix("hello") == "second: hello"
+```
+
+Existing bound client methods can be learned without additional target injection.
+Applications configure clients, credentials, timeouts, and resources. Inspection
+does not invoke capabilities or include target/context values.
+
+## Consumers and inspection
+
+- `moves.moves()` lists definitions; `knows(name)` checks registration.
+- `resolve(name)` supplies the callable; `describe(name)` and `explain(name)` inspect it.
+- Async results remain awaitable; consuming applications own their event loop.
+- Metadata is copied deeply and kept immutable; behavioral annotations are hints.
+- Discovery reads installed entry-point metadata; provider activation is explicit.
+
+The optional [MCP adapter](packages/hidden-moves-mcp/README.md) serves a selected
+catalog through a local stdio host. The separate [function-tool adapter](packages/hidden-moves-openai/README.md)
+exports Responses function tools and supports offline dispatch. Both use the same
+structured contract. Applications own authorization, transport, concurrency, and
+resource cleanup.
+
+The [installed text provider](examples/text-plugin/README.md) demonstrates ordinary
+imports, explicit activation, and target binding. The [interoperability example](examples/interop_demo.py)
+proves equivalent behavior through Python, CLI, MCP, and function tools.
+
+## Verification
+
+```sh
+PYTHONPATH=src .venv/bin/python -m unittest discover -s tests
+uvx ruff check src tests
+```
+
+CI installs the packages and example provider, checks both executables and module
+execution, and runs the core and optional adapter suites on Python 3.11 and 3.13.
+MCP tests include an actual stdio handshake/list/call. Network clients use synthetic
+fixtures and function-tool checks make no model API call.
+
+## Experimental import changes
+
+The framework no longer ships prototype `kit`, `notes`, `logs`, `palette`, `presets`,
+or `connectors` namespaces, automatic built-in assembly, `CommandSet`, or specialized
+text/JSON/shell commands. Applications register their ordinary typed functions or
+load explicit providers instead. Historical implementations remain recoverable
+from Git. See [migration notes](docs/MIGRATIONS.md).

@@ -36,8 +36,8 @@ A host starts the installed executable and owns the subprocess:
 
 The `--move` option is required and repeatable. Only those names are listed and
 callable. Providers must be explicitly enabled with `--plugin`; installing one
-does not activate it. For a built-in text-only server, use
-`hidden-moves-mcp --move text.slugify`. The server waits for protocol input on
+does not activate it. The executable begins with an empty registry and supplies
+no target binding. Configure a Python host for target-bound providers. It waits for protocol input on
 stdin and exits when its host closes the connection. Output on stdout is the
 protocol stream; application logging belongs on stderr.
 
@@ -52,12 +52,12 @@ import asyncio
 
 from hidden_moves import Moves
 from hidden_moves.adapters import CapabilityCatalog
-from hidden_moves.kit.text import slugify
+from hidden_moves_example_text import repeat_text
 from hidden_moves_mcp import MCPAdapter, serve_stdio
 
 moves = Moves()
-moves.learn(slugify, namespace="text")
-catalog = CapabilityCatalog(moves, ["text.slugify"])
+moves.learn(repeat_text, name="repeat", namespace="example.text")
+catalog = CapabilityCatalog(moves, ["example.text.repeat"])
 server = MCPAdapter(catalog).server()
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ application that consumes it.
 From the repository root, install both distributions in your chosen environment:
 
 ```sh
-uv pip install --python .venv/bin/python -e . -e ./packages/hidden-moves-openai
+uv pip install --python .venv/bin/python -e . -e ./examples/text-plugin -e ./packages/hidden-moves-openai
 ```
 
 Export and dispatch work offline:
@@ -21,18 +21,18 @@ import json
 
 from hidden_moves import Moves
 from hidden_moves.adapters import CapabilityCatalog
-from hidden_moves.kit.text import slugify
+from hidden_moves_example_text import repeat_text
 from hidden_moves_openai import FunctionToolAdapter
 
 moves = Moves()
-moves.learn(slugify, namespace="text")
-adapter = FunctionToolAdapter(CapabilityCatalog(moves, ["text.slugify"]))
+moves.learn(repeat_text, name="repeat", namespace="example.text")
+adapter = FunctionToolAdapter(CapabilityCatalog(moves, ["example.text.repeat"]))
 print(json.dumps(adapter.tools(), indent=2))
 
 output = asyncio.run(adapter.call_output(
-	"local-call-1", "text__slugify", '{"value": "Hello World"}',
+	"local-call-1", "example__text__repeat", '{"value": "Hello World"}',
 ))
-assert json.loads(output["output"]) == "hello-world"
+assert json.loads(output["output"]) == "Hello World Hello World"
 ```
 
 In an existing asynchronous Responses application, pass `adapter.tools()` as
@@ -44,7 +44,7 @@ API client, credentials, model choice, retries, approvals, or event loop.
 
 ## Names and schemas
 
-Dots become double underscores: `text.slugify` exports as `text__slugify`.
+Dots become double underscores: `example.text.repeat` exports as `example__text__repeat`.
 Names use 1-64 ASCII letters, digits, underscores, or hyphens. Invalid names and
 collisions fail at construction; use `tool_names={"qualified.name": "alias"}`
 for an explicit mapping. The original catalog retains its qualified names.

@@ -8,15 +8,15 @@ credential, or event-loop policy to the core.
 ```python
 from hidden_moves import Moves
 from hidden_moves.adapters import CapabilityCatalog
-from hidden_moves.kit.text import slugify
+from hidden_moves_example_text import repeat_text
 
 moves = Moves()
-moves.learn(slugify, namespace="text")
-catalog = CapabilityCatalog(moves, ["text.slugify"])
+moves.learn(repeat_text, name="repeat", namespace="example.text")
+catalog = CapabilityCatalog(moves, ["example.text.repeat"])
 
-definition = catalog.describe("text.slugify")
-result = catalog.invoke("text.slugify", {"value": "Hello World"})
-assert catalog.serialize_result("text.slugify", result) == "hello-world"
+definition = catalog.describe("example.text.repeat")
+result = catalog.invoke("example.text.repeat", {"value": "Hello World"})
+assert catalog.serialize_result("example.text.repeat", result) == "Hello World Hello World"
 ```
 
 Selection limits both discovery and invocation. There is no default selection;
@@ -81,6 +81,6 @@ permissions from `read_only` or silently expose installed providers.
 `hidden-moves moves show NAME` describes one definition. Explicit JSON invocation
 uses `hidden-moves moves call NAME --arguments '{"value": "Hello World"}'`.
 The CLI selects that one name, checks input before execution, awaits results in
-its own event loop when necessary, and prints validated JSON. Existing domain
-commands remain available for capabilities that need a specialized interface.
+its own event loop when necessary, and prints validated JSON. The registry is
+empty until an application or explicitly selected provider registers operations.
 External providers must still be explicitly enabled with `--plugin NAME`.
