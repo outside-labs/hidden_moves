@@ -57,3 +57,5 @@ jobs:
         run: python -m unittest discover -s packages/hidden-moves-mcp/tests -v
       - name: Check interoperability demonstration
         run: python -m unittest discover -s examples/tests -v
+      - name: Demonstrate Projects fixture interoperability
+        run: python examples/projects_fixture_demo.py

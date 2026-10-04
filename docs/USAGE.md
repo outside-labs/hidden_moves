@@ -13,6 +13,7 @@ source of behavior. The registry adds no workflow engine or application lifecycl
 | `hidden-moves-example-text` | `hidden_moves_example_text` | None for ordinary use | Independently usable example with an optional entry-point integration |
 | `hidden-moves-mcp` | `hidden_moves_mcp` | Core package and `mcp>=2.3.0,<3` | Selected tools through the official MCP SDK |
 | `hidden-moves-openai` | `hidden_moves_openai` | Core package | Responses function definitions and offline dispatch |
+| `hidden-moves-github-projects` | `hidden_moves_github_projects` | None for ordinary use; optional provider/host extras | Typed read-only Projects client and configured local host |
 
 All distributions require Python 3.11 or newer. Registry, schema, and catalog
 modules use the standard library. The optional distributions live in `packages/`
@@ -25,7 +26,9 @@ across Linux, macOS, and Windows. See the [compatibility policy](COMPATIBILITY.m
 The MCP tests exercise SDK 2.3.0's modern `2026-07-28` protocol and legacy
 `2025-11-25` handshake, including a real local stdio subprocess. Function-tool
 export and dispatch are tested offline; live model API acceptance is unverified.
-No package has been published as part of this implementation.
+No package has been published as part of this implementation. The
+[Projects consumer guide](GITHUB_PROJECTS.md) records fixture interoperability and
+a separately verified bounded live read using the existing GitHub login.
 
 ## Run the complete local demonstration
 
@@ -185,6 +188,7 @@ The local implementation is ready for a chosen consumer. A durable MCP setup
 requires selecting the host and capabilities, installing the adapter in a stable
 environment, and adding the host's subprocess configuration. A Responses setup
 requires an application-owned API client, model selection, credentials outside
-source control, and a conversation loop. Neither has been configured for an
-external account. Package publication, a public server, hosted authentication,
+source control, and a conversation loop. The Projects consumer now supplies a
+configured local GitHub client/host; its guide separates existing-login access
+from synthetic adapter proofs. Package publication, a public server, hosted authentication,
 and deployment are separate next steps.
