@@ -24,7 +24,7 @@ wheels = [
 ]
 
 [[package]]
-name = "hidden_moves"
+name = "hidden-moves"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
