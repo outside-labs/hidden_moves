@@ -7,12 +7,12 @@ import sys
 import unittest
 from dataclasses import dataclass
 
+from hidden_moves_mcp import MCPAdapter
 from mcp import Client, MCPError, StdioServerParameters
-from mcp.types import CallToolRequestParams, INVALID_PARAMS
+from mcp.types import INVALID_PARAMS, CallToolRequestParams
 
 from hidden_moves import MoveAnnotations, Moves
 from hidden_moves.adapters import CapabilityCatalog
-from hidden_moves_mcp import MCPAdapter
 
 
 def echo(value: str) -> str:
@@ -137,7 +137,7 @@ class ExportTests(unittest.TestCase):
 		self.assertEqual(adapter.tools()[0].input_schema["required"], ["value"])
 
 	def test_cli_requires_explicit_selection_before_starting(self):
-		result = subprocess.run([sys.executable, "-m", "hidden_moves_mcp"], capture_output=True, text=True)
+		result = subprocess.run([sys.executable, "-m", "hidden_moves_mcp"], capture_output=True, text=True, check=False)
 		self.assertEqual(result.returncode, 2)
 		self.assertEqual(result.stdout, "")
 		self.assertIn("--move", result.stderr)
@@ -145,6 +145,6 @@ class ExportTests(unittest.TestCase):
 	def test_cli_does_not_supply_implicit_utilities_or_bindings(self):
 		for arguments in (["--move", "text.slugify"], ["--plugin", "example-text", "--move", "example.text.prefix"]):
 			with self.subTest(arguments=arguments):
-				result = subprocess.run([sys.executable, "-m", "hidden_moves_mcp", *arguments], capture_output=True, text=True, timeout=10)
+				result = subprocess.run([sys.executable, "-m", "hidden_moves_mcp", *arguments], capture_output=True, text=True, timeout=10, check=False)
 				self.assertEqual(result.returncode, 2)
 				self.assertEqual(result.stdout, "")

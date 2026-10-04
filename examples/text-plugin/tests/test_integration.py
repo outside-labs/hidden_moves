@@ -6,11 +6,11 @@ import sys
 import unittest
 
 from click.testing import CliRunner
+from hidden_moves_example_text import prefix_text, repeat_text
 
 from hidden_moves import Moves, ProviderLoadError, discover_providers, load_provider
 from hidden_moves.adapters import CapabilityCatalog
 from hidden_moves.cli import main
-from hidden_moves_example_text import prefix_text, repeat_text
 
 
 class ExampleProviderTests(unittest.TestCase):
@@ -27,11 +27,10 @@ def independent(name, *args, **kwargs):
         raise AssertionError("ordinary helper imported the registry")
     return original(name, *args, **kwargs)
 builtins.__import__ = independent
-from hidden_moves_example_text import prefix_text, repeat_text
 assert repeat_text("hello", 2, separator="/") == "hello/hello"
 assert "hidden_moves" not in sys.modules
 '''
-		result = subprocess.run([sys.executable, "-I", "-B", "-c", script], capture_output=True, text=True)
+		result = subprocess.run([sys.executable, "-I", "-B", "-c", script], capture_output=True, text=True, check=False)
 		self.assertEqual(result.returncode, 0, result.stderr)
 
 	def test_real_metadata_discovery_does_not_import_the_integration(self):
@@ -41,7 +40,7 @@ from hidden_moves import discover_providers
 assert any(entry.name == "example-text" for entry in discover_providers())
 assert "hidden_moves_example_text.integration" not in sys.modules
 '''
-		result = subprocess.run([sys.executable, "-I", "-B", "-c", script], capture_output=True, text=True)
+		result = subprocess.run([sys.executable, "-I", "-B", "-c", script], capture_output=True, text=True, check=False)
 		self.assertEqual(result.returncode, 0, result.stderr)
 
 	def test_explicit_loading_and_catalog_agree_with_the_independent_function(self):
