@@ -14,43 +14,42 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.11', '3.13']
+        include:
+          - os: ubuntu-latest
+            python-version: '3.11'
+          - os: ubuntu-latest
+            python-version: '3.13'
+          - os: macos-latest
+            python-version: '3.13'
+          - os: windows-latest
+            python-version: '3.11'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Build and install package
-        run: python -m pip install . ./examples/text-plugin ./packages/hidden-moves-openai
-      - name: Run behavior tests
+      - name: Build wheels from source distributions
+        run: |
+          python -m pip install uv
+          uv build --out-dir dist
+          uv build ./examples/text-plugin --out-dir dist
+          uv build ./packages/hidden-moves-mcp --out-dir dist
+          uv build ./packages/hidden-moves-openai --out-dir dist
+      - name: Inspect and install actual wheels
+        run: |
+          python scripts/check_distributions.py dist
+          python -c "import pathlib, subprocess, sys; wheels = sorted(str(p) for p in pathlib.Path('dist').glob('*.whl')); subprocess.run([sys.executable, '-m', 'pip', 'install', *wheels], check=True)"
+          python scripts/check_distributions.py dist --installed
+      - name: Run core behavior tests
         run: python -m unittest discover -s tests -v
       - name: Check installed provider integration
         run: python -m unittest discover -s examples/text-plugin/tests -v
       - name: Check function-tool export and dispatch
         run: python -m unittest discover -s packages/hidden-moves-openai/tests -v
-      - name: Check installed commands
-        run: |
-          hidden-moves --plugin example-text moves show example.text.repeat
-          hm --plugin example-text moves call example.text.repeat --arguments '{"value": "hello"}'
-          python -m hidden_moves moves list
-
-  mcp-adapter:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ['3.11', '3.13']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install host and optional adapter
-        run: python -m pip install . ./examples/text-plugin ./packages/hidden-moves-mcp ./packages/hidden-moves-openai
       - name: Exercise MCP clients and local transport
         run: python -m unittest discover -s packages/hidden-moves-mcp/tests -v
       - name: Check interoperability demonstration

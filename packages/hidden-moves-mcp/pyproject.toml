@@ -1,16 +1,35 @@
 [project]
 name = "hidden-moves-mcp"
 version = "0.1.0"
-description = "Expose explicitly selected Python capabilities through MCP."
+description = "Expose selected Python capabilities through the Model Context Protocol."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ella Inng" }]
+maintainers = [{ name = "Outside Labs" }]
+keywords = ["mcp", "tools", "capabilities", "python"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
-    "hidden_moves>=0.1.0",
+    "hidden-moves>=0.1,<0.2",
     "mcp>=2.3.0,<3",
 ]
 
 [project.scripts]
 hidden-moves-mcp = "hidden_moves_mcp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/outside-labs/hidden_moves"
+Source = "https://github.com/outside-labs/hidden_moves"
+Issues = "https://github.com/outside-labs/hidden_moves/issues"
+Documentation = "https://github.com/outside-labs/hidden_moves/blob/main/packages/hidden-moves-mcp/README.md"
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13.0"]

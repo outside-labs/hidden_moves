@@ -2,11 +2,12 @@
 name = "hidden-moves-example-text"
 version = "0.1.0"
 description = "An independently usable text capability and optional registry integration."
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
-integration = ["hidden_moves>=0.1.0"]
+integration = ["hidden-moves>=0.1,<0.2"]
 
 [project.entry-points."hidden_moves.moves"]
 example-text = "hidden_moves_example_text.integration:provide_moves"

@@ -104,8 +104,9 @@ PYTHONPATH=src .venv/bin/python -m unittest discover -s tests
 uvx ruff check src tests
 ```
 
-CI installs the packages and example provider, checks both executables and module
-execution, and runs the core and optional adapter suites on Python 3.11 and 3.13.
+CI builds, inspects, and installs wheels and the example provider, checks both
+executables and module execution, and runs the complete behavior suites on Linux,
+macOS, and Windows with Python 3.11/3.13. See the [compatibility policy](docs/COMPATIBILITY.md).
 MCP tests include an actual stdio handshake/list/call. Network clients use synthetic
 fixtures and function-tool checks make no model API call.
 

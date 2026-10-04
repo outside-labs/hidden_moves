@@ -1,10 +1,29 @@
 [project]
 name = "hidden-moves-openai"
 version = "0.1.0"
-description = "Export selected Python capabilities as Responses function tools."
+description = "Export selected Python capabilities as OpenAI Responses function tools."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["hidden_moves>=0.1.0"]
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ella Inng" }]
+maintainers = [{ name = "Outside Labs" }]
+keywords = ["openai", "responses", "function-calling", "tools"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["hidden-moves>=0.1,<0.2"]
+
+[project.urls]
+Homepage = "https://github.com/outside-labs/hidden_moves"
+Source = "https://github.com/outside-labs/hidden_moves"
+Issues = "https://github.com/outside-labs/hidden_moves/issues"
+Documentation = "https://github.com/outside-labs/hidden_moves/blob/main/packages/hidden-moves-openai/README.md"
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13.0"]

@@ -1,12 +1,22 @@
 [project]
-name = "hidden_moves"
+name = "hidden-moves"
 version = "0.1.0"
-description = "Discover, compose, and bind reusable Python capabilities."
+description = "Describe, discover, bind, and expose typed Python capabilities."
 readme = "README.md"
-authors = [
-    { name = "ellainng", email = "299958882+ellainng@users.noreply.github.com" }
-]
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ella Inng" }]
+maintainers = [{ name = "Outside Labs" }]
+keywords = ["capabilities", "composition", "registry", "plugins", "typing", "json-schema"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "click>=8.4.2",
 ]
@@ -14,6 +24,12 @@ dependencies = [
 [project.scripts]
 hidden-moves = "hidden_moves.cli:main"
 hm = "hidden_moves.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/outside-labs/hidden_moves"
+Source = "https://github.com/outside-labs/hidden_moves"
+Issues = "https://github.com/outside-labs/hidden_moves/issues"
+Documentation = "https://github.com/outside-labs/hidden_moves/tree/main/docs"
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13.0"]

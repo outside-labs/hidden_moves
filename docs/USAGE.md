@@ -9,7 +9,7 @@ source of behavior. The registry adds no workflow engine or application lifecycl
 
 | Distribution | Python import | Runtime dependencies | Purpose |
 | --- | --- | --- | --- |
-| `hidden_moves` | `hidden_moves` | Click for the CLI | Registry, binding, descriptions, schemas, selected catalog, and CLI |
+| `hidden-moves` | `hidden_moves` | Click for the CLI | Registry, binding, descriptions, schemas, selected catalog, and CLI |
 | `hidden-moves-example-text` | `hidden_moves_example_text` | None for ordinary use | Independently usable example with an optional entry-point integration |
 | `hidden-moves-mcp` | `hidden_moves_mcp` | Core package and `mcp>=2.3.0,<3` | Selected tools through the official MCP SDK |
 | `hidden-moves-openai` | `hidden_moves_openai` | Core package | Responses function definitions and offline dispatch |
@@ -20,7 +20,8 @@ and are installed separately. Installing the core does not install an MCP or API
 SDK. The ordinary example function can run without the core package.
 
 The API and provider contract are experimental at version 0.1.0. Pull-request CI
-builds and installs the packages and verifies behavior on Python 3.11 and 3.13.
+builds and installs actual wheels and verifies behavior on Python 3.11 and 3.13
+across Linux, macOS, and Windows. See the [compatibility policy](COMPATIBILITY.md).
 The MCP tests exercise SDK 2.3.0's modern `2026-07-28` protocol and legacy
 `2025-11-25` handshake, including a real local stdio subprocess. Function-tool
 export and dispatch are tested offline; live model API acceptance is unverified.
