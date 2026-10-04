@@ -142,3 +142,11 @@ snapshot read updates a board or claims to be live. See the
 `python examples/projects_snapshot_demo.py` from the repository for the offline
 proof. Backpack remains an independent package with no mandatory runtime
 dependencies.
+# Optional bounded writes
+
+The separate `ProjectsWriter` and `github-projects-write` provider support adding
+an existing Issue/PR and setting a dynamically resolved single-select choice.
+The host authorizes explicit Project IDs and selects writes separately from the
+default read profile. See the [write guide](../../docs/PROJECT_WRITES.md) for
+expected-value checks, verified/unverified receipts and the remaining disposable
+fixture gate. There are no bulk, deletion or archive tools.
