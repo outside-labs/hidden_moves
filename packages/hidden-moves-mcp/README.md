@@ -66,8 +66,62 @@ if __name__ == "__main__":
 
 Applications can configure clients or targets before building the catalog. The
 adapter consumes those bound callables and does not infer credentials or context.
-Synchronous functions execute in the request handler; awaitable results are awaited
-there. Client resource setup and shutdown belong to the application.
+The stdio adapter defaults to invoking synchronous functions in the request
+handler and awaiting awaitable results there. `MCPAdapter` also accepts explicit
+`offload_sync=True` and a finite `call_timeout` for hosts that need them. Client
+resource setup and shutdown belong to the application.
+
+## Local Streamable HTTP
+
+```python
+from hidden_moves_mcp import create_http_app, serve_http
+
+async def authorize(request):
+    # Check the application's local request grant without consuming the body.
+    return await local_access_policy(request.headers)
+
+app = create_http_app(catalog, authorize=authorize)
+asyncio.run(serve_http(app, port=8000))
+```
+
+The application supplies an async authorizer that returns exactly `True` for each
+allowed request. Missing grants, rejected grants and authorizer exceptions return
+401 before protocol dispatch. It chooses credentials, request identity and the
+selected catalog; no installed provider or account is activated implicitly.
+
+`serve_http` binds only `127.0.0.1`. The
+[SDK's ASGI app](https://py.sdk.modelcontextprotocol.io/run/asgi/) handles
+Streamable HTTP, initialization, protocol negotiation and lifespan cleanup at
+`/mcp`, with its default localhost Host/Origin protection. Responses are JSON and
+HTTP is stateless. The same adapter supplies schemas, annotations and
+`structuredContent: {"result": value}` over HTTP and stdio. Unselected names remain
+protocol errors. Mounting the returned app inside another application requires
+the host to run its lifespan, as described in the SDK guide.
+
+Defaults are a 10-second call deadline, 30-second request deadline, 16 concurrent
+requests and a 1 MiB request body. Limits must be finite; excess concurrency returns
+503, an expired request returns 504, and the SDK rejects oversized bodies with 413.
+Timed-out tools return sanitized tool errors. Access logging is disabled by the
+local serving helper, and forwarded identity headers are not trusted.
+
+HTTP offloads synchronous capabilities by default so blocking I/O does not stop
+other requests. Async capabilities execute on the event loop. Configure the
+underlying clients with their own finite I/O timeouts: cancellation cannot stop a
+running Python worker thread, and a timed-out write may still complete. Inspect
+its outcome before submitting another write. Thread-affine resources need an
+application-owned execution strategy; `offload_sync=False` is available for fast
+event-loop-safe callables, whose deadlines depend on cooperative yielding. The
+host owns resource cleanup and concurrency safety.
+
+`examples/mcp_http.py` serves only `example.text.repeat` using an explicitly
+configured `HIDDEN_MOVES_LOCAL_HTTP_TOKEN` of 32–512 printable ASCII characters.
+It demonstrates a local request grant; hosted OAuth, delegated GitHub credentials
+and per-user catalog isolation require their separate authentication work.
+
+Installed-wheel tests run real loopback initialize/list/call clients in modern
+and legacy modes, compare Python/HTTP DTOs, check authorization and request limits,
+exercise cancellation and worker offloading, then shut down the SDK lifespan and
+listener. The existing real stdio subprocess checks still run in the same suite.
 
 ## Export contract
 
