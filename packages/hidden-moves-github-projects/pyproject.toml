@@ -22,6 +22,7 @@ dependencies = []
 [project.optional-dependencies]
 moves = ["hidden-moves>=0.1,<0.2"]
 host = ["hidden-moves-mcp>=0.1,<0.2"]
+backpack = ["outside-labs-backpack>=0.1,<0.2"]
 
 [project.entry-points."hidden_moves.moves"]
 github-projects = "hidden_moves_github_projects.integration:provide_moves"

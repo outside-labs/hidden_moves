@@ -68,3 +68,9 @@ SDK stdio cleanup. Remote hosting requires request-scoped user authorization,
 credentials, and synchronous-work offloading. Function tools dispatch offline;
 applications own any later model request. Package upload and a public plugin
 remain separate release decisions.
+# Dated local snapshots
+
+The optional [snapshot bridge](PROJECT_SNAPSHOTS.md) now stores a normalized
+Project item in an explicitly configured Backpack file and recovers its typed DTO
+after reopening. Capture time and completeness diagnostics are visible; GitHub
+continues to own current board state.

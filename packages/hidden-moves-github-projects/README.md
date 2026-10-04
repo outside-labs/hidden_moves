@@ -132,3 +132,13 @@ python -m unittest discover -s packages/hidden-moves-github-projects/tests
 ```
 
 Inspection, fixture tests, and offline function tools require no model API call.
+# Optional local snapshots
+
+The `backpack` extra enables an explicit Projects-to-Backpack bridge. Store dated
+normalized Project/item DTOs with a local UUID and source provenance, then reopen
+them without GitHub access. Fetch and persistence can be invoked separately; no
+snapshot read updates a board or claims to be live. See the
+[snapshot guide](../../docs/PROJECT_SNAPSHOTS.md) and run
+`python examples/projects_snapshot_demo.py` from the repository for the offline
+proof. Backpack remains an independent package with no mandatory runtime
+dependencies.
