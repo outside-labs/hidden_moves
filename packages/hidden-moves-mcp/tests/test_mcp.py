@@ -7,13 +7,16 @@ import sys
 import unittest
 from dataclasses import dataclass
 
+from hidden_moves_mcp import MCPAdapter
 from mcp import Client, MCPError, StdioServerParameters
-from mcp.types import CallToolRequestParams, INVALID_PARAMS
+from mcp.types import INVALID_PARAMS, CallToolRequestParams
 
 from hidden_moves import MoveAnnotations, Moves
 from hidden_moves.adapters import CapabilityCatalog
-from hidden_moves.kit.text import slugify
-from hidden_moves_mcp import MCPAdapter
+
+
+def echo(value: str) -> str:
+	return value
 
 
 @dataclass
@@ -23,7 +26,7 @@ class Record:
 
 
 class MCPTests(unittest.IsolatedAsyncioTestCase):
-	def adapter(self, func=slugify, **options):
+	def adapter(self, func=echo, **options):
 		moves = Moves()
 		moves.learn(func, name="operation", namespace="example", **options)
 		return MCPAdapter(CapabilityCatalog(moves, ["example.operation"]))
@@ -41,14 +44,14 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
 			self.assertIsNone(tool.annotations.idempotent_hint)
 			result = await client.call_tool(tool.name, {"value": "Héllo World"})
 			self.assertFalse(result.is_error)
-			self.assertEqual(result.structured_content, {"result": "hello-world"})
+			self.assertEqual(result.structured_content, {"result": "Héllo World"})
 			self.assertEqual(json.loads(result.content[0].text), result.structured_content)
 
 	async def test_legacy_client_handshake_also_works(self):
 		async with Client(self.adapter().server(), mode="legacy") as client:
 			self.assertEqual(client.protocol_version, "2025-11-25")
 			result = await client.call_tool("example.operation", {"value": "Hello World"})
-			self.assertEqual(result.structured_content["result"], "hello-world")
+			self.assertEqual(result.structured_content["result"], "Hello World")
 
 	async def test_bad_inputs_and_unknown_tools_cannot_execute(self):
 		calls = []
@@ -114,8 +117,8 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
 class ExportTests(unittest.TestCase):
 	def test_name_aliases_are_validated_and_collision_checked(self):
 		moves = Moves()
-		moves.learn(slugify, name="café")
-		moves.learn(slugify, name="second")
+		moves.learn(echo, name="café")
+		moves.learn(echo, name="second")
 		catalog = CapabilityCatalog(moves, ["café", "second"])
 		with self.assertRaises(ValueError):
 			MCPAdapter(catalog)
@@ -126,15 +129,22 @@ class ExportTests(unittest.TestCase):
 
 	def test_unknown_hints_are_omitted_and_exported_views_are_independent(self):
 		moves = Moves()
-		moves.learn(slugify)
-		adapter = MCPAdapter(CapabilityCatalog(moves, ["slugify"]))
+		moves.learn(echo)
+		adapter = MCPAdapter(CapabilityCatalog(moves, ["echo"]))
 		first = adapter.tools()[0]
 		self.assertIsNone(first.annotations)
 		first.input_schema["required"].clear()
 		self.assertEqual(adapter.tools()[0].input_schema["required"], ["value"])
 
 	def test_cli_requires_explicit_selection_before_starting(self):
-		result = subprocess.run([sys.executable, "-m", "hidden_moves_mcp"], capture_output=True, text=True)
+		result = subprocess.run([sys.executable, "-m", "hidden_moves_mcp"], capture_output=True, text=True, check=False)
 		self.assertEqual(result.returncode, 2)
 		self.assertEqual(result.stdout, "")
 		self.assertIn("--move", result.stderr)
+
+	def test_cli_does_not_supply_implicit_utilities_or_bindings(self):
+		for arguments in (["--move", "text.slugify"], ["--plugin", "example-text", "--move", "example.text.prefix"]):
+			with self.subTest(arguments=arguments):
+				result = subprocess.run([sys.executable, "-m", "hidden_moves_mcp", *arguments], capture_output=True, text=True, timeout=10, check=False)
+				self.assertEqual(result.returncode, 2)
+				self.assertEqual(result.stdout, "")

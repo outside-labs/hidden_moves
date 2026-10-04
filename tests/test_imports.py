@@ -36,10 +36,6 @@ class ImportTests(unittest.TestCase):
 				assert "mcp" not in sys.modules, "core imported an optional adapter SDK"
 				for module in (
 					"hidden_moves.adapters",
-					"hidden_moves.builtins",
-					"hidden_moves.notes.obsidian",
-					"hidden_moves.kit.cmd.commands",
-					"hidden_moves.connectors.json_api",
 					"hidden_moves.cli",
 					"hidden_moves.__main__",
 				):
