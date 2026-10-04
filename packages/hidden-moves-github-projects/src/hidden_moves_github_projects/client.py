@@ -77,7 +77,7 @@ class ProjectsClient:
 	def __repr__(self) -> str:
 		return "ProjectsClient()"
 
-	def _read(self, query: str, variables: dict) -> dict:
+	def _execute(self, query: str, variables: dict) -> dict:
 		try:
 			token = self._token() if callable(self._token) else self._token
 		except Exception:  # noqa: BLE001 - Resolver failures may contain credentials.
@@ -121,7 +121,7 @@ class ProjectsClient:
 		"""Read one page of a user's or organization's Projects, retaining its cursor."""
 		if owner_kind not in ("user", "organization"):
 			raise ValueError("owner_kind must be user or organization.")
-		data = self._read(_queries.owner_query(owner_kind, listing=True), {
+		data = self._execute(_queries.owner_query(owner_kind, listing=True), {
 			"owner": _text(owner, "owner"), "first": _count(page_size, "page_size"), "cursor": _cursor(cursor),
 		})
 		if data.get("owner") is None:
@@ -134,7 +134,7 @@ class ProjectsClient:
 		"""Read a Project by its owner kind, login, and Project number."""
 		if owner_kind not in ("user", "organization"):
 			raise ValueError("owner_kind must be user or organization.")
-		data = self._read(_queries.owner_query(owner_kind, listing=False), {
+		data = self._execute(_queries.owner_query(owner_kind, listing=False), {
 			"owner": _text(owner, "owner"), "number": _count(number, "number", 2_147_483_647),
 		})
 		owner_data = data.get("owner")
@@ -144,7 +144,7 @@ class ProjectsClient:
 
 	def fields(self, project_id: str, *, cursor: str | None = None, page_size: int = 50) -> FieldPage:
 		"""Read one field-definition page, including select options and iteration metadata."""
-		data = self._read(_queries.FIELD_QUERY, {"id": _text(project_id, "project_id"), "first": _count(page_size, "page_size"), "cursor": _cursor(cursor)})
+		data = self._execute(_queries.FIELD_QUERY, {"id": _text(project_id, "project_id"), "first": _count(page_size, "page_size"), "cursor": _cursor(cursor)})
 		nodes, page = normalize.connection(normalize.node(data, "ProjectV2").get("fields"))
 		fields, diagnostics = [], []
 		for value in nodes:
@@ -155,7 +155,7 @@ class ProjectsClient:
 
 	def items(self, project_id: str, *, cursor: str | None = None, page_size: int = 50, field_page_size: int = 50) -> ItemPage:
 		"""Read a bounded item page; incomplete nested values retain their own cursors."""
-		data = self._read(_queries.ITEM_QUERY, {
+		data = self._execute(_queries.ITEM_QUERY, {
 			"id": _text(project_id, "project_id"), "first": _count(page_size, "page_size"),
 			"cursor": _cursor(cursor), "fieldFirst": _count(field_page_size, "field_page_size"),
 		})
@@ -167,7 +167,7 @@ class ProjectsClient:
 
 	def item_field_values(self, item_id: str, *, cursor: str | None = None, page_size: int = 50) -> FieldValuePage:
 		"""Continue a nested field-values connection using the item's distinct node ID."""
-		data = self._read(_queries.VALUE_QUERY, {"id": _text(item_id, "item_id"), "first": _count(page_size, "page_size"), "cursor": _cursor(cursor)})
+		data = self._execute(_queries.VALUE_QUERY, {"id": _text(item_id, "item_id"), "first": _count(page_size, "page_size"), "cursor": _cursor(cursor)})
 		return normalize.field_values(item_id, normalize.node(data, "ProjectV2Item").get("fieldValues"))
 
 	def iter_item_pages(self, project_id: str, *, page_size: int = 50, field_page_size: int = 50, max_pages: int = 10) -> Iterator[ItemPage]:

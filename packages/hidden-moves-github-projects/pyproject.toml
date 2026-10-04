@@ -1,7 +1,7 @@
 [project]
 name = "hidden-moves-github-projects"
 version = "0.1.0"
-description = "Read GitHub Projects through typed Python operations."
+description = "Read and explicitly edit GitHub Projects through typed Python operations."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -26,9 +26,11 @@ backpack = ["outside-labs-backpack>=0.1,<0.2"]
 
 [project.entry-points."hidden_moves.moves"]
 github-projects = "hidden_moves_github_projects.integration:provide_moves"
+github-projects-write = "hidden_moves_github_projects.write_integration:provide_write_moves"
 
 [project.scripts]
 hidden-moves-github-projects = "hidden_moves_github_projects.host:main"
+hidden-moves-github-projects-write = "hidden_moves_github_projects.write_host:main"
 
 [project.urls]
 Homepage = "https://github.com/outside-labs/hidden_moves"
