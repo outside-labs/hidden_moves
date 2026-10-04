@@ -71,9 +71,64 @@ unless the application explicitly supplies such a resolver.
 
 ```sh
 PYTHONPATH=packages/hidden-moves-github-projects/src \
-  .venv/bin/python -m unittest discover -s packages/hidden-moves-github-projects/tests
+  .venv/bin/python -m unittest discover -s packages/hidden-moves-github-projects/tests -p test_client.py
 ```
 
 Tests use synthetic response fixtures, an injected transport, and blocked side
 effects. CI builds and installs the actual wheel across the family platform matrix.
 Live read access and capability-host interoperability are separate proofs.
+
+## Optional provider and local host
+
+Install `[moves]` for the optional provider or `[host]` for the MCP executable.
+For local development install the family packages together:
+
+```sh
+uv pip install --python .venv/bin/python . ./packages/hidden-moves-mcp \
+  ./packages/hidden-moves-openai ./packages/hidden-moves-github-projects
+hidden-moves --plugin github-projects moves show github.projects.items
+```
+
+The zero-argument `github-projects` entry-point factory never resolves credentials
+or makes a request. It advertises target-bound `github.projects.list/get/fields/items`
+with read-only, non-destructive, external annotations. Generic framework inspection
+needs no token; account invocation needs an application-bound `ProjectsClient`.
+
+```python
+from hidden_moves_github_projects import ProjectsClient
+from hidden_moves_github_projects.host import build_catalog, resolve_gh_token
+from hidden_moves_mcp import MCPAdapter
+from hidden_moves_openai import FunctionToolAdapter
+
+client = ProjectsClient(resolve_gh_token, timeout=10)
+catalog = build_catalog(client, ["github.projects.items"])
+mcp = MCPAdapter(catalog)
+functions = FunctionToolAdapter(catalog)
+```
+
+`resolve_gh_token` explicitly captures the existing `github.com` login from `gh`
+when a read executes. It neither prints the token nor changes login/scopes. A
+local MCP host can launch the installed executable:
+
+```json
+{
+  "command": "/absolute/path/to/environment/bin/hidden-moves-github-projects",
+  "args": ["--move", "github.projects.items", "--timeout", "10"]
+}
+```
+
+Only selected capabilities list or dispatch. The host supplies no arbitrary query,
+shell, or Project-editing tool. The SDK owns stdio protocol and process cleanup.
+This configured local application uses one local identity; a remote host requires
+request-scoped authorization and credentials. Sync HTTP executes inline here;
+concurrent remote hosting must provide its own offloading and resource strategy.
+
+The consumer tests use a synthetic transport and compare ordinary Python, the
+selected catalog, actual stdio MCP initialize/list/call, and offline function-tool
+dispatch. Install the local family and run:
+
+```sh
+python -m unittest discover -s packages/hidden-moves-github-projects/tests
+```
+
+Inspection, fixture tests, and offline function tools require no model API call.
