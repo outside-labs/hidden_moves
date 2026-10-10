@@ -13,11 +13,19 @@ Python 3.11 or newer is required. Click is the core distribution's only runtime
 dependency. Registry, schema, and catalog modules use the standard library.
 
 ```sh
-uv sync
-uv run hidden-moves --help
-uv run hidden-moves plugins list
-uv run hidden-moves moves list --json
+python -m pip install hidden-moves==0.1.0
+hidden-moves --help
+hidden-moves plugins list
+hidden-moves moves list --json
 ```
+
+The initial `0.1.0` release is experimental. The core package is published
+independently; the MCP, function-tool, and GitHub Projects adapters remain
+source installations until their separate package releases. See the
+[release notes](docs/release-0.1.0.md) for the release and verification contract.
+
+For development and the source-only example below, run `uv sync --locked`
+from a checkout.
 
 The registry starts empty. Installing a provider advertises it; loading it is an
 explicit choice. Install the source-only text example to try the generic CLI:
