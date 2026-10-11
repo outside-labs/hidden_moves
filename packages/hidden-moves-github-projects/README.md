@@ -7,9 +7,14 @@ is an optional extra.
 
 The PyPI distribution is `hidden-moves-github-projects` and the Python import is
 `hidden_moves_github_projects`. The optional `backpack` extra requires
-`backpack-store>=0.1,<0.2`. Initial publication is pending PyPI trusted-publisher
-availability. Its prepared release route uses `v0.1.0-github-projects`,
-`release.yaml`, and environment `pypi-github-projects`; see the
+`backpack-store>=0.1,<0.2`.
+
+```sh
+python -m pip install hidden-moves-github-projects==0.1.0
+```
+
+Its release route uses `v0.1.0-github-projects`, `release.yaml`, and environment
+`pypi-github-projects`; see the
 [release guide](../../docs/PYPI_RELEASES.md).
 
 ## Ordinary Python

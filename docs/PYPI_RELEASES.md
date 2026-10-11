@@ -40,12 +40,11 @@ Backpack has its own repository, `outside-labs/backpack`, distribution
 `backpack-store`, `release.yaml` workflow and `pypi` environment. Its independent
 initial tag is `v0.1.0`; Python imports use `backpack_store`.
 
-## Pending GitHub Projects publication
+## GitHub Projects publisher
 
-The GitHub Projects release route is prepared. Its initial upload is deferred
-until a pending-publisher slot is available and the PyPI publisher is configured:
+The GitHub Projects package uses these dedicated publisher fields:
 
-| Pending publisher field | Value |
+| Publisher field | Value |
 | --- | --- |
 | PyPI project name | `hidden-moves-github-projects` |
 | Owner | `outside-labs` |
@@ -53,8 +52,8 @@ until a pending-publisher slot is available and the PyPI publisher is configured
 | Workflow filename | `release.yaml` |
 | Environment | `pypi-github-projects` |
 
-Once this publisher is ready, publish the matching `v0.1.0-github-projects`
-GitHub release at a verified main commit. The workflow first verifies the
+Publish the matching `v0.1.0-github-projects` GitHub release at a verified main
+commit. The workflow first verifies the
 ordinary client without optional integrations, then installs the published
 adapters and `backpack-store` for the provider, write-profile and snapshot tests.
 The ordinary client has no mandatory runtime dependencies.
