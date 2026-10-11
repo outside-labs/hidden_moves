@@ -15,7 +15,7 @@ python -m pip install hidden-moves-github-projects==0.1.0
 
 Its release route uses `v0.1.0-github-projects`, `release.yaml`, and environment
 `pypi-github-projects`; see the
-[release guide](../../docs/PYPI_RELEASES.md).
+[release guide](https://github.com/outside-labs/hidden_moves/blob/main/docs/PYPI_RELEASES.md).
 
 ## Ordinary Python
 
