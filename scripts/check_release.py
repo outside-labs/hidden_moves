@@ -12,6 +12,9 @@ PACKAGES = {
     "hidden-moves": (".", "", "pypi"),
     "hidden-moves-mcp": ("packages/hidden-moves-mcp", "-mcp", "pypi-mcp"),
     "hidden-moves-openai": ("packages/hidden-moves-openai", "-openai", "pypi-openai"),
+    "hidden-moves-github-projects": (
+        "packages/hidden-moves-github-projects", "-github-projects", "pypi-github-projects",
+    ),
 }
 
 

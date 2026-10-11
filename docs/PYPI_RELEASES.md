@@ -9,6 +9,7 @@ The environment must match the selected package exactly:
 | `hidden-moves` | `0.1.0` | `v0.1.0` | `pypi` |
 | `hidden-moves-mcp` | `0.1.0` | `v0.1.0-mcp` | `pypi-mcp` |
 | `hidden-moves-openai` | `0.1.0` | `v0.1.0-openai` | `pypi-openai` |
+| `hidden-moves-github-projects` | `0.1.0` | `v0.1.0-github-projects` | `pypi-github-projects` |
 
 Tags start with `v`; adapter suffixes distinguish versions in the shared
 repository. The core's original `v0.1.0` tag and uploaded files stay in place.
@@ -38,3 +39,22 @@ an external model request.
 Backpack has its own repository, `outside-labs/backpack`, distribution
 `backpack-store`, `release.yaml` workflow and `pypi` environment. Its independent
 initial tag is `v0.1.0`; Python imports use `backpack_store`.
+
+## Pending GitHub Projects publication
+
+The GitHub Projects release route is prepared. Its initial upload is deferred
+until a pending-publisher slot is available and the PyPI publisher is configured:
+
+| Pending publisher field | Value |
+| --- | --- |
+| PyPI project name | `hidden-moves-github-projects` |
+| Owner | `outside-labs` |
+| Repository | `hidden_moves` |
+| Workflow filename | `release.yaml` |
+| Environment | `pypi-github-projects` |
+
+Once this publisher is ready, publish the matching `v0.1.0-github-projects`
+GitHub release at a verified main commit. The workflow first verifies the
+ordinary client without optional integrations, then installs the published
+adapters and `backpack-store` for the provider, write-profile and snapshot tests.
+The ordinary client has no mandatory runtime dependencies.

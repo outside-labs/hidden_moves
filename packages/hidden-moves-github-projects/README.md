@@ -1,8 +1,16 @@
 # GitHub Projects client
 
-An experimental read-only GraphQL client with concrete typed records. The ordinary
-Python library uses only the standard library and does not import Hidden Moves,
-MCP, or an API SDK. Capability integration is an optional extra.
+An experimental GraphQL client with concrete typed records and explicitly
+selected write operations. The ordinary Python library uses only the standard
+library and does not import Hidden Moves, MCP, or an API SDK. Capability integration
+is an optional extra.
+
+The PyPI distribution is `hidden-moves-github-projects` and the Python import is
+`hidden_moves_github_projects`. The optional `backpack` extra requires
+`backpack-store>=0.1,<0.2`. Initial publication is pending PyPI trusted-publisher
+availability. Its prepared release route uses `v0.1.0-github-projects`,
+`release.yaml`, and environment `pypi-github-projects`; see the
+[release guide](../../docs/PYPI_RELEASES.md).
 
 ## Ordinary Python
 
