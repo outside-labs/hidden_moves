@@ -68,6 +68,12 @@ jobs:
               "$test_venv/bin/hidden-moves-mcp" --help
               "$test_venv/bin/python" -I -c "import hidden_moves_mcp"
               ;;
+            hidden-moves-openai)
+              uv build ./examples/text-plugin --out-dir "${RUNNER_TEMP}/text-provider"
+              uv pip install --python "$test_venv/bin/python" "${RUNNER_TEMP}/text-provider/"*.whl
+              "$test_venv/bin/python" -m unittest discover -s "$PACKAGE_DIRECTORY/tests" -v
+              "$test_venv/bin/python" -I -c "import hidden_moves_openai"
+              ;;
             *) exit 1 ;;
           esac
       - uses: actions/upload-artifact@v5
