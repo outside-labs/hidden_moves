@@ -68,7 +68,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: outside-labs/backpack
-          ref: 50bb74578a3686751bafcac9d6c9bdf12acdabe9
+          ref: 03840cec90523b5b622f9efd38f5b7140c14b418
           path: .dependencies/backpack
       - name: Build and install the optional Backpack wheel
         run: |

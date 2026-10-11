@@ -32,6 +32,11 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(release["package"], "hidden-moves-openai")
         self.assertEqual(release["environment"], "pypi-openai")
 
+    def test_projects_tag_uses_its_own_publisher(self):
+        release = select_release("v0.1.0-github-projects")
+        self.assertEqual(release["package"], "hidden-moves-github-projects")
+        self.assertEqual(release["environment"], "pypi-github-projects")
+
     def test_unknown_malformed_and_mismatched_tags_are_rejected(self):
         for tag in ("0.1.0", "v0.1.1", "v0.1.0-unknown", "v0.1.0-mcp-extra", "v0.1.0-mcp\n", "v0.1.0/../mcp"):
             with self.subTest(tag=tag), self.assertRaises(ValueError):

@@ -74,6 +74,27 @@ jobs:
               "$test_venv/bin/python" -m unittest discover -s "$PACKAGE_DIRECTORY/tests" -v
               "$test_venv/bin/python" -I -c "import hidden_moves_openai"
               ;;
+            hidden-moves-github-projects)
+              "$test_venv/bin/python" -I - <<'PY'
+          import sys
+          from importlib.metadata import distribution
+          import hidden_moves_github_projects
+          project = distribution('hidden-moves-github-projects')
+          assert all('extra ==' in requirement for requirement in (project.requires or []))
+          assert 'hidden_moves' not in sys.modules
+          assert 'backpack_store' not in sys.modules
+          PY
+              "$test_venv/bin/python" -m unittest discover -s "$PACKAGE_DIRECTORY/tests" -p test_client.py -v
+              uv pip install --python "$test_venv/bin/python" \
+                'hidden-moves-mcp>=0.1,<0.2' 'hidden-moves-openai>=0.1,<0.2' 'backpack-store>=0.1,<0.2'
+              uv pip check --python "$test_venv/bin/python"
+              "$test_venv/bin/python" -m unittest discover -s "$PACKAGE_DIRECTORY/tests" -v
+              "$test_venv/bin/python" -m unittest discover -s "$PACKAGE_DIRECTORY/write_tests" -v
+              "$test_venv/bin/python" -m unittest discover -s "$PACKAGE_DIRECTORY/snapshot_tests" -v
+              "$test_venv/bin/hidden-moves-github-projects" --help
+              "$test_venv/bin/hidden-moves-github-projects-write" --help
+              "$test_venv/bin/python" examples/projects_snapshot_demo.py
+              ;;
             *) exit 1 ;;
           esac
       - uses: actions/upload-artifact@v5
