@@ -5,6 +5,15 @@ Responses function tools and dispatches returned calls through that catalog.
 It uses the standard library and the core package; an API SDK is optional in the
 application that consumes it.
 
+```sh
+python -m pip install hidden-moves-openai==0.1.0
+```
+
+The experimental 0.1.x adapter depends on `hidden-moves>=0.1,<0.2` and Python
+3.11 or newer. Published GitHub releases use `v0.1.0-openai` for this package in
+the shared repository. `.github/workflows/release.yaml` checks installed-wheel
+offline export and dispatch, then publishes in environment `pypi-openai`.
+
 ## Local setup
 
 From the repository root, install both distributions in your chosen environment:

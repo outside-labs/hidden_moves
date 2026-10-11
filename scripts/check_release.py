@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGES = {
     "hidden-moves": (".", "", "pypi"),
     "hidden-moves-mcp": ("packages/hidden-moves-mcp", "-mcp", "pypi-mcp"),
+    "hidden-moves-openai": ("packages/hidden-moves-openai", "-openai", "pypi-openai"),
 }
 
 
