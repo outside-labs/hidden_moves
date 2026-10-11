@@ -3,6 +3,16 @@
 An optional adapter around explicitly selected capability catalogs. The MCP SDK
 dependency belongs to this distribution; the core registry remains independent.
 
+```sh
+python -m pip install hidden-moves-mcp==0.1.0
+hidden-moves-mcp --help
+```
+
+The experimental 0.1.x adapter depends on `hidden-moves>=0.1,<0.2` and Python
+3.11 or newer. Published GitHub releases use `v0.1.0-mcp` for this package in the
+shared repository. `.github/workflows/release.yaml` builds only its distribution,
+checks installed-wheel transports, and publishes in environment `pypi-mcp`.
+
 ## Local installation
 
 From the repository root:
