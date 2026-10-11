@@ -8,14 +8,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: hidden-moves-pypi-release
+  group: hidden-moves-pypi-release-${{ github.event.release.tag_name }}
   cancel-in-progress: false
 
 jobs:
   build:
-    name: Build and verify core distribution
+    name: Build and verify selected distribution
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      package: ${{ steps.release.outputs.package }}
+      environment: ${{ steps.release.outputs.environment }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,53 +27,68 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Verify release tag
+      - name: Select package and verify release tag
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: python scripts/check_release.py --tag "$RELEASE_TAG" --output "$GITHUB_OUTPUT"
+      - name: Install build tools
+        run: python -m pip install 'uv==0.12.19' twine
+      - name: Build selected wheel and source distribution
+        env:
+          PACKAGE_DIRECTORY: ${{ steps.release.outputs.package_directory }}
+        run: uv build "$PACKAGE_DIRECTORY" --out-dir dist
+      - name: Check distribution metadata
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          python - <<'PY'
-          import os, tomllib
-          from pathlib import Path
-          project = tomllib.loads(Path('pyproject.toml').read_text())['project']
-          assert project['name'] == 'hidden-moves'
-          assert os.environ['RELEASE_TAG'] == 'v' + project['version'], 'Tag must match the package version'
-          PY
-      - name: Install build tools
-        run: python -m pip install 'uv==0.12.19' twine
-      - name: Build core wheel and source distribution
-        run: uv build --out-dir dist
-      - name: Check distribution metadata
-        run: python -m twine check --strict dist/*
-      - name: Verify installed core and CLI aliases
+          python scripts/check_release.py --tag "$RELEASE_TAG" --check dist
+          python -m twine check --strict dist/*
+      - name: Verify installed wheel and public interfaces
         shell: bash
+        env:
+          PACKAGE: ${{ steps.release.outputs.package }}
+          PACKAGE_DIRECTORY: ${{ steps.release.outputs.package_directory }}
         run: |
-          test_venv="${RUNNER_TEMP}/hidden-moves-wheel"
+          test_venv="${RUNNER_TEMP}/selected-wheel"
           uv venv "$test_venv" --python 3.13
           uv pip install --python "$test_venv/bin/python" dist/*.whl
           uv pip check --python "$test_venv/bin/python"
-          "$test_venv/bin/python" -m unittest discover -s tests -v
-          "$test_venv/bin/hidden-moves" --help
-          "$test_venv/bin/hm" moves list --json
-          "$test_venv/bin/python" -I -m hidden_moves moves list --json
+          case "$PACKAGE" in
+            hidden-moves)
+              "$test_venv/bin/python" -m unittest discover -s tests -v
+              "$test_venv/bin/hidden-moves" --help
+              "$test_venv/bin/hm" moves list --json
+              "$test_venv/bin/python" -I -m hidden_moves moves list --json
+              ;;
+            hidden-moves-mcp)
+              uv build ./examples/text-plugin --out-dir "${RUNNER_TEMP}/text-provider"
+              uv pip install --python "$test_venv/bin/python" "${RUNNER_TEMP}/text-provider/"*.whl
+              "$test_venv/bin/python" -m unittest discover -s "$PACKAGE_DIRECTORY/tests" -v
+              "$test_venv/bin/hidden-moves-mcp" --help
+              "$test_venv/bin/python" -I -c "import hidden_moves_mcp"
+              ;;
+            *) exit 1 ;;
+          esac
       - uses: actions/upload-artifact@v5
         with:
-          name: hidden-moves-distributions
+          name: ${{ steps.release.outputs.package }}-distributions
           path: dist/
           if-no-files-found: error
           retention-days: 7
 
   publish:
-    name: Publish core distribution to PyPI
+    name: Publish selected distribution to PyPI
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: pypi
-      url: https://pypi.org/project/hidden-moves/
+      name: ${{ needs.build.outputs.environment }}
+      url: https://pypi.org/project/${{ needs.build.outputs.package }}/
     permissions:
       id-token: write
     steps:
       - uses: actions/download-artifact@v6
         with:
-          name: hidden-moves-distributions
+          name: ${{ needs.build.outputs.package }}-distributions
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
