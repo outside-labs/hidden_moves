@@ -7,6 +7,9 @@ per-object binding, and explicitly selected consumer interfaces.
 The API and provider contract are experimental. See the [plugin contract](docs/PLUGIN_API.md),
 [catalog guide](docs/CAPABILITY_CATALOG.md), and [usage guide](docs/USAGE.md).
 
+For agent workflows, use the portable [Hidden Moves skill](skills/hidden-moves/SKILL.md)
+and the [local capability implementation plan](IMPLEMENTATION_PLAN.md).
+
 ## Installation and CLI
 
 Python 3.11 or newer is required. Click is the core distribution's only runtime
