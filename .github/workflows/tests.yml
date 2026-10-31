@@ -42,6 +42,7 @@ jobs:
           uv build ./packages/hidden-moves-mcp --out-dir dist
           uv build ./packages/hidden-moves-openai --out-dir dist
           uv build ./packages/hidden-moves-github-projects --out-dir dist
+          uv build ./packages/hidden-moves-workspace --out-dir dist
       - name: Inspect and install actual wheels
         run: |
           python scripts/check_distributions.py dist
@@ -55,6 +56,8 @@ jobs:
         run: python -m unittest discover -s packages/hidden-moves-openai/tests -v
       - name: Check standalone Projects client
         run: python -m unittest discover -s packages/hidden-moves-github-projects/tests -v
+      - name: Check standalone workspace context
+        run: python -m unittest discover -s packages/hidden-moves-workspace/tests -v
       - name: Check bounded Project writes with synthetic transport
         run: python -m unittest discover -s packages/hidden-moves-github-projects/write_tests -v
       - name: Exercise MCP clients and local transport

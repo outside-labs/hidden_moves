@@ -15,6 +15,7 @@ PUBLIC = {
 	"hidden-moves-mcp": "hidden_moves_mcp",
 	"hidden-moves-openai": "hidden_moves_openai",
 	"hidden-moves-github-projects": "hidden_moves_github_projects",
+	"hidden-moves-workspace": "hidden_moves_workspace",
 }
 EXAMPLE = "hidden-moves-example-text"
 
@@ -58,8 +59,8 @@ def check_wheels(directory: Path) -> None:
 				for requirement in requirements
 			):
 				raise ValueError(f"Missing tested core minor range for {name}.")
-			if name == "hidden-moves-github-projects" and any(";" not in requirement for requirement in requirements):
-				raise ValueError("The ordinary Projects client must have no mandatory dependencies.")
+			if name in {"hidden-moves-github-projects", "hidden-moves-workspace"} and any(";" not in requirement for requirement in requirements):
+				raise ValueError("Ordinary domain clients must have no mandatory dependencies.")
 			if name == "hidden-moves":
 				allowed = {"core", "adapters", "commands", "__init__.py", "__main__.py", "cli.py"}
 				for item in names:
