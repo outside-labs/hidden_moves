@@ -58,6 +58,8 @@ jobs:
         run: python -m unittest discover -s packages/hidden-moves-github-projects/tests -v
       - name: Check standalone workspace context
         run: python -m unittest discover -s packages/hidden-moves-workspace/tests -v
+      - name: Check workspace provider and actual stdio interoperability
+        run: python -m unittest discover -s packages/hidden-moves-workspace/integration_tests -v
       - name: Check bounded Project writes with synthetic transport
         run: python -m unittest discover -s packages/hidden-moves-github-projects/write_tests -v
       - name: Exercise MCP clients and local transport

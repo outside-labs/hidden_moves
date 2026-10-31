@@ -46,10 +46,97 @@ sensitive files, so configure it only with content appropriate for the consumer.
 These checks reduce accidental escapes; this local library is not an OS sandbox
 against hostile concurrent filesystem replacement, hard links, or mount changes.
 
-The client never writes files, invokes commands, or accesses a network. Optional
-provider and transport integration are developed separately from this client.
+The client never writes files, invokes commands, or accesses a network. Importing
+`hidden_moves_workspace` does not import Hidden Moves or a protocol adapter.
+
+## Install and inspect the provider
+
+From the repository checkout, install the local packages into your environment:
+
+```sh
+uv pip install . ./packages/hidden-moves-mcp ./packages/hidden-moves-openai \
+  './packages/hidden-moves-workspace[host]'
+hidden-moves plugins list
+hidden-moves --plugin workspace moves show workspace.read
+```
+
+The ordinary package has no mandatory dependencies. The `[moves]` extra enables
+the provider and configured JSON CLI; `[host]` also enables local MCP. The
+function-tool adapter is installed separately. Discovery and unbound inspection
+do not open selected files, and the generic CLI cannot infer a workspace target.
+
+The installed `workspace` provider advertises `workspace.files`, `workspace.read`,
+and `workspace.search`. They are target-bound wrappers, annotated read-only,
+non-destructive, and idempotent. Their external-system hint reflects the mutable
+local filesystem, not network access. Hints do not authorize exposure.
+
+## Configured CLI and local MCP
+
+Run a useful read-only context workflow from a checkout:
+
+```sh
+hidden-moves-workspace --root . --file README.md --file src/hidden_moves/core/moves.py \
+  --move workspace.files call workspace.files
+hidden-moves-workspace --root . --file src/hidden_moves/core/moves.py \
+  --move workspace.search call workspace.search \
+  --arguments '{"path":"src/hidden_moves/core/moves.py","query":"def learn","max_matches":3}'
+hidden-moves-workspace --root . --file src/hidden_moves/core/moves.py \
+  --move workspace.read call workspace.read \
+  --arguments '{"path":"src/hidden_moves/core/moves.py","start_line":1,"line_count":12}'
+```
+
+`--root`, repeated `--file`, and repeated `--move` are required; no root, file,
+or capability is selected by default. `--max-file-bytes` can lower the content
+ceiling. Only selected moves can dispatch. The CLI prints validated finite JSON;
+input and domain errors exit with status 2 and omit host paths/content.
+
+For a local MCP client, launch the same executable with `serve`:
+
+```sh
+hidden-moves-workspace --root /absolute/project --file README.md \
+  --move workspace.files --move workspace.read --move workspace.search serve
+```
+
+Use these tokens as the client's executable/argument array. Configuration belongs
+to the local host, outside tool arguments. The server serves the selected catalog
+over stdio and offloads synchronous reads from its event loop. Startup emits no
+application output to stdout. MCP failures identify the exception type without
+leaking file content; `StaleContentError` means restart from current content.
+
+This is a Python entry-point plugin and local MCP host. It does not create a
+hosted marketplace package, remote identity service, or public endpoint.
+
+## Python composition and offline function tools
+
+```python
+import asyncio
+import json
+
+from hidden_moves_openai import FunctionToolAdapter
+from hidden_moves_workspace import Workspace
+from hidden_moves_workspace.host import build_catalog
+
+workspace = Workspace("/path/to/project", ["README.md"])
+catalog = build_catalog(workspace, ["workspace.read"])
+arguments = {"path": "README.md", "line_count": 12}
+value = catalog.serialize_result("workspace.read", catalog.invoke("workspace.read", arguments))
+functions = FunctionToolAdapter(catalog)
+assert json.loads(asyncio.run(functions.call("workspace__read", arguments))) == value
+```
+
+`functions.tools()` exports tool definitions. Offline dispatch makes no model API
+call. Defaults retain ordinary Python omission semantics; the adapter's default
+`strict=False` preserves these optional arguments. For MCP in an application,
+pass the same catalog to `MCPAdapter` from `hidden_moves_mcp`.
+
+## Verification
 
 ```sh
 PYTHONPATH=packages/hidden-moves-workspace/src python -S -m unittest discover \
   -s packages/hidden-moves-workspace/tests -v
+python -m unittest discover -s packages/hidden-moves-workspace/integration_tests -v
 ```
+
+Integration tests use synthetic temporary files and compare Python, catalog,
+MCP, and function-tool results. Actual stdio tests start the installed module,
+initialize a client, list/call tools, continue pages, and reject unselected moves.

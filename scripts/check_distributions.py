@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 import sysconfig
+import tempfile
 from email.parser import BytesParser
 from pathlib import Path
 from zipfile import ZipFile
@@ -104,6 +105,15 @@ def smoke_installed() -> None:
 	process = subprocess.run([str(scripts / ("hidden-moves-mcp" + suffix)), "--help"], capture_output=True, text=True, check=True, timeout=10)
 	if "--move" not in process.stdout:
 		raise ValueError("Installed MCP entry point failed.")
+	with tempfile.TemporaryDirectory() as root:
+		Path(root, "demo.txt").write_bytes(b"workspace wheel smoke\n")
+		process = subprocess.run([
+			str(scripts / ("hidden-moves-workspace" + suffix)), "--root", root,
+			"--file", "demo.txt", "--move", "workspace.read", "call", "workspace.read",
+			"--arguments", '{"path":"demo.txt","line_count":1}',
+		], capture_output=True, text=True, check=True, timeout=10)
+		if json.loads(process.stdout)["lines"] != [{"number": 1, "column": 1, "text": "workspace wheel smoke"}]:
+			raise ValueError("Installed workspace entry point failed.")
 	print("Installed imports, aliases, provider binding, and adapter exports passed.")
 
 
