@@ -63,7 +63,7 @@ catalog after changing registrations.
 ## Local workspace context
 
 Use the `workspace` provider for bounded context over explicitly selected UTF-8
-files. Read its [guide](../../packages/hidden-moves-workspace/README.md) for source
+files. Read its [guide](https://github.com/outside-labs/hidden_moves/blob/main/packages/hidden-moves-workspace/README.md) for source
 installation and configuration. The generic CLI can inspect its definitions;
 use the configured host to invoke them:
 
@@ -89,7 +89,7 @@ not an atomic snapshot across the workspace.
 
 For MCP, use the same explicit configuration followed by `serve` instead of
 `call`. Pass root and file selection to the host, outside public tool arguments.
-See the [implementation plan](../../IMPLEMENTATION_PLAN.md) for the current
+See the [implementation plan](https://github.com/outside-labs/hidden_moves/blob/main/IMPLEMENTATION_PLAN.md) for the current
 capability scope and follow-up decisions.
 
 ## Add a useful plugin
@@ -111,8 +111,10 @@ are part of the task. Check invalid inputs and rejection of unselected names.
 Keep fixture output finite and JSON-compatible; preserve completeness and
 continuation information when returning bounded results.
 
-Read the [plugin contract](../../docs/PLUGIN_API.md) for provider and binding
-details, [catalog guide](../../docs/CAPABILITY_CATALOG.md) for supported schemas
-and validation, and [usage guide](../../docs/USAGE.md) for existing adapters.
+Read the [plugin contract](https://github.com/outside-labs/hidden_moves/blob/main/docs/PLUGIN_API.md) for provider and binding
+details, [catalog guide](https://github.com/outside-labs/hidden_moves/blob/main/docs/CAPABILITY_CATALOG.md) for supported schemas
+and validation, and [usage guide](https://github.com/outside-labs/hidden_moves/blob/main/docs/USAGE.md) for existing adapters.
+When a checkout is available, read those same paths locally. These links are
+optional reference material; the workflow above also applies to an installed skill.
 A Python entry-point provider and local MCP host are separate from a hosted
 marketplace plugin. Hosted authorization and packaging follow their own tasks.
