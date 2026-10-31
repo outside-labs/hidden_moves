@@ -54,6 +54,17 @@ linked issues own current task status.
 
 ## Verification and next decisions
 
+The first workflow is implemented by the [workspace plugin](packages/hidden-moves-workspace/README.md):
+`workspace.files`, `workspace.read`, and `workspace.search`. The configured host
+supports JSON invocation and local MCP stdio; the same selected catalog feeds
+offline function tools. The skill now includes the actual CLI and continuation
+workflow. The provider remains source-only and outside public release routing.
+
+A real-use check selected `README.md` and `src/hidden_moves/core/moves.py`, listed
+only those paths, found `def learn` through literal search, and read a numbered
+excerpt using the search result's digest. This exercised the same inspect/search/
+read flow described in the skill without modifying the source files.
+
 Use synthetic temporary files for path handling, Unicode, long lines, byte
 limits, continuation, and changes between calls. Run the client tests without
 Hidden Moves installed, then exercise installed provider discovery, selection,

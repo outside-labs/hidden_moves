@@ -9,6 +9,8 @@ The API and provider contract are experimental. See the [plugin contract](docs/P
 
 For agent workflows, use the portable [Hidden Moves skill](skills/hidden-moves/SKILL.md)
 and the [local capability implementation plan](IMPLEMENTATION_PLAN.md).
+The [workspace plugin](packages/hidden-moves-workspace/README.md) supplies bounded
+numbered excerpts and literal search over an explicitly selected set of local files.
 
 ## Installation and CLI
 
